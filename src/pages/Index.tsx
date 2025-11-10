@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { SetStateAction, Dispatch } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -7,18 +7,22 @@ import { Edit } from 'lucide-react';
 import LoginOpcional from '@/components/LoginOpcional';
 import ListasSalvas from '@/components/ListasSalvas';
 import ComparacoesSalvas from '@/components/ComparacoesSalvas';
+import { ItemCompra, ResultadoComparacao } from '@/types/list';
 
 interface InicioProps {
     setNumPessoas: (num: number) => void;
+    setList: Dispatch<SetStateAction<ItemCompra[]>>;
+    setComparisonResult: (result: ResultadoComparacao | null) => void;
 }
 
-const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
+const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonResult }) => {
     const navigate = useNavigate();
 
     const handleCreateManualList = () => {
-        // Define o padrão de 1 pessoa para lista manual (mantido para compatibilidade com o hook de estado, mas não usado na lógica de geração)
         setNumPessoas(1); 
-        navigate('/lista', { state: { initialList: [] } }); // Navega com lista vazia
+        setList([]); // Garante que a lista global está vazia
+        setComparisonResult(null); // Limpa resultados anteriores
+        navigate('/lista'); 
     };
 
     return (
@@ -46,8 +50,10 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
                     </CardContent>
                 </Card>
                 
-                {/* O setNumPessoas não é mais relevante para ListasSalvas, mas mantemos a prop por enquanto */}
-                <ListasSalvas setNumPessoas={setNumPessoas} />
+                <ListasSalvas 
+                    setNumPessoas={setNumPessoas} 
+                    setList={setList}
+                />
                 <ComparacoesSalvas />
             </div>
         </Layout>

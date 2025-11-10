@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
 import ListaItemRow from '@/components/ListaItemRow';
-import { Plus, Calculator, Save, Loader2, ArrowLeft, Tag } from 'lucide-react';
+import { Plus, Calculator, Save, Loader2, Tag } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { calcularComparacao } from '@/utils/list-generator';
 import { useSession } from '@/contexts/SessionContext';
@@ -15,28 +15,20 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 interface ListaDeComprasProps {
     list: ItemCompra[];
     setList: Dispatch<SetStateAction<ItemCompra[]>>; 
-    setComparisonResult: (result: ResultadoComparacao) => void;
+    setComparisonResult: (result: ResultadoComparacao | null) => void;
     numPessoas: number; // Mantido para compatibilidade com o hook, mas não usado no título
 }
 
 const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setComparisonResult, numPessoas }) => {
-    const location = useLocation();
     const navigate = useNavigate();
     const { user } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Se a lista inicial vier da navegação (Tela Inicial), use-a.
+    // Limpa o resultado da comparação ao entrar na página de edição da lista
     useEffect(() => {
-        // Verifica se há um estado de navegação com initialList
-        if (location.state && 'initialList' in location.state) {
-            const initialList = location.state.initialList as ItemCompra[];
-            // Só atualiza se a lista atual estiver vazia ou se a lista inicial for diferente
-            if (list.length === 0 || initialList.length > 0) {
-                setList(initialList);
-            }
-        }
-    }, [location.state, setList]);
+        setComparisonResult(null);
+    }, [setComparisonResult]);
 
     const updateItem = useCallback((index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max' | 'categoria', value: string | number | null) => {
         setList(prevList => {
@@ -65,7 +57,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             quantidade: 1,
             unidade: "un",
             precos: { proenca: null, iquegami: null, max: null },
-            categoria: "Outros", // Categoria padrão para novos itens
+            categoria: "Outros (Diversos e Especiais)", // Categoria padrão para novos itens
         };
         setList(prevList => [...prevList, newItem]);
     };
@@ -133,7 +125,8 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     const groupedList = useMemo(() => {
         const groups: Record<string, ItemCompra[]> = {};
         list.forEach(item => {
-            const category = item.categoria || "Outros";
+            // Garante que o item tenha uma categoria válida, usando o padrão se necessário
+            const category = item.categoria || "Outros (Diversos e Especiais)";
             if (!groups[category]) {
                 groups[category] = [];
             }

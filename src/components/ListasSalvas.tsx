@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, SetStateAction, Dispatch } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,9 +18,10 @@ interface SavedList {
 
 interface ListasSalvasProps {
     setNumPessoas: (num: number) => void;
+    setList: Dispatch<SetStateAction<ItemCompra[]>>;
 }
 
-const ListasSalvas: React.FC<ListasSalvasProps> = ({ setNumPessoas }) => {
+const ListasSalvas: React.FC<ListasSalvasProps> = ({ setNumPessoas, setList }) => {
     const { user, isLoading: isSessionLoading } = useSession();
     const navigate = useNavigate();
     const [lists, setLists] = useState<SavedList[]>([]);
@@ -55,7 +56,9 @@ const ListasSalvas: React.FC<ListasSalvasProps> = ({ setNumPessoas }) => {
 
     const handleLoadList = (list: SavedList) => {
         setNumPessoas(list.num_pessoas);
-        navigate('/lista', { state: { initialList: list.list_data } });
+        setList(list.list_data); // Carrega a lista no estado global
+        showSuccess(`Lista "${list.name}" carregada com sucesso.`);
+        navigate('/lista'); // Navega para a página de lista
     };
 
     const handleDeleteList = async (listId: string, listName: string) => {

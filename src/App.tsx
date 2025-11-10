@@ -18,7 +18,16 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Index setNumPessoas={shoppingListState.setNumPessoas} />} />
+        <Route 
+          path="/" 
+          element={
+            <Index 
+              setNumPessoas={shoppingListState.setNumPessoas} 
+              setList={shoppingListState.setList}
+              setComparisonResult={shoppingListState.setComparisonResult}
+            />
+          } 
+        />
         <Route 
           path="/lista" 
           element={
