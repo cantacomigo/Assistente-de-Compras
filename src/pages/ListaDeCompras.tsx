@@ -226,12 +226,12 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                     <Table className="min-w-full">
                         <TableHeader className="bg-gray-100 dark:bg-gray-800 sticky top-0">
                             <TableRow>
-                                <TableHead className="w-1/4 min-w-[150px]">Item</TableHead>
-                                <TableHead className="w-[150px] min-w-[150px]">Categoria</TableHead>
-                                <TableHead className="w-[150px] text-center">Qtd (Unidade)</TableHead>
-                                <TableHead className="w-[100px] text-right text-blue-600">Preço Proença (R$)</TableHead>
-                                <TableHead className="w-[100px] text-right text-blue-600">Preço Iquegami (R$)</TableHead>
-                                <TableHead className="w-[100px] text-right text-blue-600">Preço Max (R$)</TableHead>
+                                <TableHead className="w-[25%] min-w-[120px]">Item</TableHead>
+                                <TableHead className="w-[15%] min-w-[120px]">Categoria</TableHead>
+                                <TableHead className="w-[15%] text-center min-w-[100px]">Qtd (Unidade)</TableHead>
+                                <TableHead className="w-[15%] text-right text-blue-600">Proença (R$)</TableHead>
+                                <TableHead className="w-[15%] text-right text-blue-600">Iquegami (R$)</TableHead>
+                                <TableHead className="w-[15%] text-right text-blue-600">Max (R$)</TableHead>
                                 <TableHead className="w-10 text-center">Remover</TableHead>
                             </TableRow>
                         </TableHeader>

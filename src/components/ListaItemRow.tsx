@@ -96,7 +96,7 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
             </td>
             
             {/* Categoria (Select) */}
-            <td className="p-2 w-[150px]">
+            <td className="p-1 w-[15%]">
                 <Select 
                     value={item.categoria} 
                     onValueChange={(value) => updateItem(index, 'categoria', value)}
@@ -115,7 +115,7 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
             </td>
 
             {/* Quantidade e Unidade (Número Editável) */}
-            <td className="p-2 w-[150px]">
+            <td className="p-1 w-[15%]">
                 <div className="flex items-center space-x-1">
                     <Input
                         type="number"
@@ -142,14 +142,14 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
                 const price = item.precos[key as 'proenca' | 'iquegami' | 'max'];
                 
                 return (
-                    <td key={key} className="p-2 w-[100px]">
+                    <td key={key} className="p-1 w-[15%]">
                         <Input
                             placeholder="0,00"
                             value={inputState}
                             onChange={(e) => setInputState(e.target.value)}
                             onBlur={() => handleBlur(key as 'proenca' | 'iquegami' | 'max', inputState)}
                             className={cn(
-                                "w-full h-8 p-1 text-right font-mono",
+                                "w-full h-8 p-1 text-right font-mono text-sm",
                                 !isPriceValid(price) && price !== null && "border-red-500 focus-visible:ring-red-500"
                             )}
                         />
@@ -158,7 +158,7 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
             })}
 
             {/* Ação (Remover) */}
-            <td className="p-2 w-10 text-center">
+            <td className="p-1 w-10 text-center">
                 <Button 
                     variant="ghost" 
                     size="icon" 
