@@ -137,6 +137,6 @@
   .bg-gray-100, .bg-blue-50 {
     background-color: #f0f0f0 !important;
     -webkit-print-color-adjust: exact;
-    color-adjust: exact;
+    print-color-adjust: exact; /* Substituído color-adjust */
   }
 }
