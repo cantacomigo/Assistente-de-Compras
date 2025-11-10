@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
-import { ArrowLeft, Share2, FileText, Save, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Share2, FileText, Save, TrendingUp, Loader2 } from 'lucide-react';
 import { formatBRL } from '@/utils/format';
 import { showSuccess, showError } from '@/utils/toast';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ComparacaoProps {
     list: ItemCompra[];
@@ -16,6 +18,8 @@ interface ComparacaoProps {
 
 const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
     const navigate = useNavigate();
+    const { user } = useSession();
+    const [isSaving, setIsSaving] = useState(false);
 
     if (!comparisonResult || list.length === 0) {
         // Redireciona se não houver dados de comparação
@@ -45,14 +49,39 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
 
     const handleShare = () => {
         // Implementação de compartilhamento
-        const shareText = `Comparei minha lista de compras e a melhor opção é o ${melhorOpcao.supermercado}, economizando ${formatBRL(economiaMax)}! Use o Comparador de Preços Supermercados!`;
+        const shareText = `Comparei minha lista de compras e a melhor opção é o ${melhorOpcao.supermercado}, com um total de ${formatBRL(melhorOpcao.total)}. Economia de ${formatBRL(economiaMax)}! Use o Comparador de Preços Supermercados!`;
         navigator.clipboard.writeText(shareText);
         showSuccess("Texto de comparação copiado para a área de transferência!");
     };
 
-    const handleSaveComparison = () => {
-        // Implementação de salvar comparação no banco
-        showSuccess("Comparação salva com sucesso! (Implementação de banco de dados em andamento)");
+    const handleSaveComparison = async () => {
+        if (!user) {
+            showError("Você precisa estar logado para salvar comparações.");
+            return;
+        }
+
+        setIsSaving(true);
+
+        const { error } = await supabase
+            .from('comparisons')
+            .insert({
+                user_id: user.id,
+                comparison_data: {
+                    list: list,
+                    result: comparisonResult,
+                },
+                total_final: melhorOpcao.total,
+                melhor_supermercado: melhorOpcao.supermercado,
+            });
+
+        setIsSaving(false);
+
+        if (error) {
+            console.error("Erro ao salvar comparação:", error);
+            showError("Erro ao salvar comparação. Tente novamente.");
+        } else {
+            showSuccess("Comparação salva com sucesso!");
+        }
     };
 
     return (
@@ -146,8 +175,14 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
                     <Button 
                         onClick={handleSaveComparison} 
                         variant="secondary"
+                        disabled={isSaving || !user}
                     >
-                        <Save className="h-4 w-4 mr-2" /> Salvar Comparação
+                        {isSaving ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                            <Save className="h-4 w-4 mr-2" />
+                        )}
+                        {user ? 'Salvar Comparação' : 'Login Necessário'}
                     </Button>
                     <Button 
                         onClick={handleExportPDF} 
