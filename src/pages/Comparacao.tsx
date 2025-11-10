@@ -43,8 +43,8 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
     const { totalProenca, totalIquegami, totalMax, melhorOpcao, economiaMax, economiaMedia } = comparisonResult;
 
     const handleExportPDF = () => {
-        // Implementação de exportação de PDF (requer biblioteca externa ou lógica de impressão)
-        showSuccess("Funcionalidade de Exportar PDF em desenvolvimento!");
+        // Usa a funcionalidade de impressão do navegador, otimizada via CSS @media print
+        window.print();
     };
 
     const handleShare = () => {
@@ -164,7 +164,7 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
                 </Card>
 
                 {/* Botões de Ação */}
-                <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+                <div className="flex flex-wrap gap-3 justify-center sm:justify-start print-hidden">
                     <Button 
                         onClick={() => navigate('/lista')} 
                         variant="outline"

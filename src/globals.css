@@ -99,3 +99,43 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos de Impressão (PDF) */
+@media print {
+  /* Esconde elementos não essenciais para o PDF */
+  header, footer, .print-hidden {
+    display: none !important;
+  }
+
+  /* Garante que o conteúdo principal ocupe a largura total */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* Remove o fundo para economizar tinta */
+  body, .bg-gray-50, .dark\\:bg-gray-900, .bg-green-50, .dark\\:bg-green-900\\/20, .bg-gray-100, .dark\\:bg-gray-800 {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  /* Garante que as cores da tabela sejam visíveis */
+  .dark .text-gray-200, .dark .text-gray-300, .dark .text-gray-400 {
+    color: black !important;
+  }
+
+  /* Garante que a tabela e cards sejam impressos corretamente */
+  .shadow-xl, .border {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  /* Força a cor de fundo da tabela para branco para melhor leitura */
+  .bg-gray-100, .bg-blue-50 {
+    background-color: #f0f0f0 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}

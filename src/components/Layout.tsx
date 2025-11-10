@@ -11,11 +11,13 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
         <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-            <Header />
+            <header className="print-hidden">
+                <Header />
+            </header>
             <main className="flex-grow container mx-auto p-4 sm:p-6">
                 {children}
             </main>
-            <footer className="p-2 bg-gray-100 dark:bg-gray-800">
+            <footer className="p-2 bg-gray-100 dark:bg-gray-800 print-hidden">
                 <MadeWithDyad />
             </footer>
         </div>
