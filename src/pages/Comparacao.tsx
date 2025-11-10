@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
 import { ArrowLeft, Share2, FileText, Save, TrendingUp } from 'lucide-react';
 import { formatBRL } from '@/utils/format';
-import { toast } from '@/utils/toast';
+import { showSuccess } from '@/utils/toast';
 
 interface ComparacaoProps {
     list: ItemCompra[];
@@ -21,7 +21,7 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
         // Redireciona se não houver dados de comparação
         React.useEffect(() => {
             if (!comparisonResult) {
-                toast.showError("Nenhum resultado de comparação encontrado. Por favor, gere uma lista primeiro.");
+                showSuccess("Nenhum resultado de comparação encontrado. Por favor, gere uma lista primeiro.");
                 navigate('/');
             }
         }, [comparisonResult, navigate]);
@@ -40,19 +40,19 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
 
     const handleExportPDF = () => {
         // Implementação de exportação de PDF (requer biblioteca externa ou lógica de impressão)
-        toast.showSuccess("Funcionalidade de Exportar PDF em desenvolvimento!");
+        showSuccess("Funcionalidade de Exportar PDF em desenvolvimento!");
     };
 
     const handleShare = () => {
         // Implementação de compartilhamento
         const shareText = `Comparei minha lista de compras e a melhor opção é o ${melhorOpcao.supermercado}, economizando ${formatBRL(economiaMax)}! Use o Comparador de Preços Supermercados!`;
         navigator.clipboard.writeText(shareText);
-        toast.showSuccess("Texto de comparação copiado para a área de transferência!");
+        showSuccess("Texto de comparação copiado para a área de transferência!");
     };
 
     const handleSaveComparison = () => {
         // Implementação de salvar comparação no banco
-        toast.showSuccess("Comparação salva com sucesso! (Implementação de banco de dados em andamento)");
+        showSuccess("Comparação salva com sucesso! (Implementação de banco de dados em andamento)");
     };
 
     return (

@@ -1,4 +1,4 @@
-import { ItemCompra } from "@/types/list";
+import { ItemCompra, ResultadoComparacao } from "@/types/list";
 
 // Base de itens essenciais por pessoa/grupo
 const ITENS_BASE = [
@@ -75,9 +75,9 @@ export function calcularComparacao(lista: ItemCompra[]): ResultadoComparacao {
     });
 
     const totais = [
-        { nome: "Proença", total: totalProenca },
-        { nome: "Iquegami", total: totalIquegami },
-        { nome: "Max", total: totalMax },
+        { supermercado: "Proença", total: totalProenca },
+        { supermercado: "Iquegami", total: totalIquegami },
+        { supermercado: "Max", total: totalMax },
     ].filter(t => t.total > 0); // Apenas supermercados com preços preenchidos
 
     if (totais.length === 0) {

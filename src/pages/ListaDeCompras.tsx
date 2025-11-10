@@ -1,18 +1,18 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, SetStateAction, Dispatch } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
-import { calculateComparacao } from '@/utils/list-generator';
 import ListaItemRow from '@/components/ListaItemRow';
 import { Plus, Calculator, Save, Loader2, ArrowLeft } from 'lucide-react';
-import { toast } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { calcularComparacao } from '@/utils/list-generator';
 
 interface ListaDeComprasProps {
     list: ItemCompra[];
-    setList: (list: ItemCompra[]) => void;
+    // setList agora aceita a função de atualização ou a nova lista
+    setList: Dispatch<SetStateAction<ItemCompra[]>>; 
     setComparisonResult: (result: ResultadoComparacao) => void;
     numPessoas: number;
 }
@@ -72,7 +72,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         );
 
         if (itensIncompletos.length > 0) {
-            toast.showError("Por favor, preencha o nome, quantidade e pelo menos um preço válido para todos os itens.");
+            showError("Por favor, preencha o nome, quantidade e pelo menos um preço válido para todos os itens.");
             return;
         }
 
@@ -90,7 +90,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
     const handleSaveList = () => {
         // Implementação futura: Salvar lista no Supabase ou Local Storage
-        toast.showSuccess("Lista salva localmente! (Implementação de banco de dados em andamento)");
+        showSuccess("Lista salva localmente! (Implementação de banco de dados em andamento)");
     };
 
     if (list.length === 0 && !location.state?.initialList) {
