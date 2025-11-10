@@ -1,12 +1,10 @@
 import React, { SetStateAction, Dispatch } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit } from 'lucide-react';
 import LoginOpcional from '@/components/LoginOpcional';
 import ListasSalvas from '@/components/ListasSalvas';
 import ComparacoesSalvas from '@/components/ComparacoesSalvas';
+import HeroSection from '@/components/HeroSection';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
 
 interface InicioProps {
@@ -27,34 +25,24 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
 
     return (
         <Layout>
-            <div className="max-w-lg mx-auto">
-                <Card className="shadow-lg border-t-4 border-blue-500">
-                    <CardHeader>
-                        <CardTitle className="text-3xl text-blue-700 dark:text-blue-400">
-                            Economize no Supermercado!
-                        </CardTitle>
-                        <CardDescription>
-                            Crie sua lista de compras e compare os preços entre Proença, Iquegami e Max.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button 
-                            onClick={handleCreateManualList} 
-                            className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6 transition-all duration-300"
-                        >
-                            <Edit className="h-6 w-6 mr-2" />
-                            Criar Nova Lista de Compras
-                        </Button>
-                        
-                        <LoginOpcional />
-                    </CardContent>
-                </Card>
+            <div className="max-w-4xl mx-auto space-y-10">
                 
-                <ListasSalvas 
-                    setNumPessoas={setNumPessoas} 
-                    setList={setList}
-                />
-                <ComparacoesSalvas />
+                {/* 1. Seção Principal (Hero) */}
+                <HeroSection handleCreateManualList={handleCreateManualList} />
+                
+                {/* 2. Login Opcional */}
+                <div className="max-w-lg mx-auto">
+                    <LoginOpcional />
+                </div>
+
+                {/* 3. Listas e Comparações Salvas */}
+                <div className="max-w-lg mx-auto space-y-8">
+                    <ListasSalvas 
+                        setNumPessoas={setNumPessoas} 
+                        setList={setList}
+                    />
+                    <ComparacoesSalvas />
+                </div>
             </div>
         </Layout>
     );
