@@ -16,7 +16,7 @@ interface ListaDeComprasProps {
     list: ItemCompra[];
     setList: Dispatch<SetStateAction<ItemCompra[]>>; 
     setComparisonResult: (result: ResultadoComparacao) => void;
-    numPessoas: number;
+    numPessoas: number; // Mantido para compatibilidade com o hook, mas não usado no título
 }
 
 const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setComparisonResult, numPessoas }) => {
@@ -147,7 +147,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     return (
         <Layout>
             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-                Lista de Compras (Para {numPessoas} Pessoas)
+                Minha Lista de Compras
             </h2>
             <div className="space-y-6">
                 <div className="flex flex-wrap gap-2 justify-between items-center">

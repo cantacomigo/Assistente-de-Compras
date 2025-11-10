@@ -1,66 +1,13 @@
 import { ItemCompra, ResultadoComparacao } from "@/types/list";
 
-// Base de itens essenciais por pessoa/grupo
-const ITENS_BASE = [
-  // Mercearia Seca
-  { nome: "Arroz", base: 1, unidade: "kg", porPessoa: true, categoria: "Mercearia Seca" },
-  { nome: "Feijão", base: 1, unidade: "kg", porPessoa: true, categoria: "Mercearia Seca" },
-  { nome: "Óleo de Cozinha", base: 1, unidade: "ml", divisor: 2, quantidadeBase: 900, categoria: "Mercearia Seca" }, // 900ml por 2 pessoas
-  { nome: "Açúcar", base: 1, unidade: "kg", divisor: 4, categoria: "Mercearia Seca" }, // 1kg por 4 pessoas
-  { nome: "Café", base: 1, unidade: "g", divisor: 4, quantidadeBase: 500, categoria: "Mercearia Seca" }, // 500g por 4 pessoas
-  { nome: "Macarrão", base: 1, unidade: "pacote (500g)", porPessoa: true, categoria: "Mercearia Seca" },
-  
-  // Laticínios e Ovos
-  { nome: "Leite", base: 1, unidade: "L", porPessoa: true, categoria: "Laticínios e Ovos" },
-  { nome: "Ovos", base: 1, unidade: "dúzia", divisor: 4, categoria: "Laticínios e Ovos" }, // 1 dúzia por 4 pessoas
-  
-  // Carnes e Proteínas
-  { nome: "Carne Moída", base: 0.5, unidade: "kg", porPessoa: true, categoria: "Carnes e Proteínas" }, // 500g por pessoa
-  
-  // Hortifrúti
-  { nome: "Banana", base: 1, unidade: "kg", porPessoa: true, categoria: "Hortifrúti" },
-  { nome: "Tomate", base: 1, unidade: "kg", divisor: 2, categoria: "Hortifrúti" }, // 1kg por 2 pessoas
-
-  // Padaria
-  { nome: "Pão de Forma", base: 1, unidade: "pacote", divisor: 2, categoria: "Padaria" }, // 1 pacote por 2 pessoas
-];
-
 /**
  * Gera uma lista de compras escalada pelo número de pessoas.
  * @param numPessoas Número de pessoas na família.
  * @returns Lista de ItemCompra.
  */
 export function gerarListaInicial(numPessoas: number): ItemCompra[] {
-  if (numPessoas < 1) numPessoas = 1;
-
-  return ITENS_BASE.map((item, index) => {
-    let quantidade: number;
-
-    if (item.porPessoa) {
-      // 1kg por pessoa
-      quantidade = numPessoas * item.base;
-    } else if (item.divisor) {
-      // Arredonda para cima a quantidade de unidades necessárias
-      const unidadesNecessarias = Math.ceil(numPessoas / item.divisor);
-      quantidade = unidadesNecessarias * (item.quantidadeBase || item.base);
-    } else {
-        quantidade = item.base;
-    }
-
-    return {
-      id: `item-${index}-${Date.now()}`,
-      nome: item.nome,
-      quantidade: parseFloat(quantidade.toFixed(2)), // Mantém 2 casas decimais para quantidades
-      unidade: item.unidade,
-      precos: {
-        proenca: null,
-        iquegami: null,
-        max: null,
-      },
-      // Adiciona a categoria ao item
-      categoria: item.categoria,
-    };
-  });
+  // Retorna uma lista vazia, pois a geração sugerida foi removida.
+  return [];
 }
 
 /**
