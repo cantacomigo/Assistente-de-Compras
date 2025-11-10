@@ -5,20 +5,23 @@ import * as z from 'zod';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, Lock, LogIn, Loader2, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2, UserPlus, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 
+// Esquema de validação para email e senha (senha é opcional para Magic Link)
 const formSchema = z.object({
     email: z.string().email({ message: "Email inválido." }),
-    password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
+    password: z.string().optional(), // Senha é opcional
 });
 
 type LoginFormValues = z.infer<typeof formSchema>;
 
 const LoginForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
-    const [isSignUp, setIsSignUp] = useState(false); // Estado para alternar entre Login e Cadastro
+    const [isSignUp, setIsSignUp] = useState(false);
+    const [useMagicLink, setUseMagicLink] = useState(false);
+    const [magicLinkSent, setMagicLinkSent] = useState(false);
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(formSchema),
@@ -34,19 +37,31 @@ const LoginForm: React.FC = () => {
         let error;
         let successMessage;
 
-        if (isSignUp) {
+        if (useMagicLink) {
+            // Magic Link (Sign In with OTP)
+            const { error: otpError } = await supabase.auth.signInWithOtp({
+                email: values.email,
+                options: {
+                    emailRedirectTo: window.location.origin, // Redireciona de volta para a página inicial
+                }
+            });
+            error = otpError;
+            successMessage = "Link de acesso enviado! Verifique seu email.";
+            setMagicLinkSent(true);
+
+        } else if (isSignUp) {
             // Cadastro (Sign Up)
             const { error: signUpError } = await supabase.auth.signUp({
                 email: values.email,
-                password: values.password,
+                password: values.password!, // Senha é obrigatória no modo Sign Up
             });
             error = signUpError;
             successMessage = "Cadastro realizado! Verifique seu email para confirmar a conta.";
         } else {
-            // Login (Sign In)
+            // Login (Sign In with Password)
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: values.email,
-                password: values.password,
+                password: values.password!, // Senha é obrigatória no modo Sign In
             });
             error = signInError;
             successMessage = "Login realizado com sucesso!";
@@ -66,6 +81,24 @@ const LoginForm: React.FC = () => {
             showSuccess(successMessage);
         }
     };
+
+    const handleToggleMode = (mode: 'login' | 'signup' | 'magiclink') => {
+        form.reset();
+        setMagicLinkSent(false);
+        if (mode === 'magiclink') {
+            setUseMagicLink(true);
+            setIsSignUp(false);
+        } else {
+            setUseMagicLink(false);
+            setIsSignUp(mode === 'signup');
+        }
+    };
+
+    const currentModeText = useMagicLink 
+        ? 'Magic Link' 
+        : isSignUp 
+            ? 'Cadastro' 
+            : 'Login';
 
     return (
         <Form {...form}>
@@ -91,52 +124,76 @@ const LoginForm: React.FC = () => {
                         </FormItem>
                     )}
                 />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="sr-only">Senha</FormLabel>
-                            <FormControl>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                    <Input 
-                                        placeholder="Senha" 
-                                        {...field} 
-                                        className="pl-10 h-10"
-                                        type="password"
-                                    />
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
                 
-                <Button 
-                    type="submit" 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white h-10"
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : isSignUp ? (
-                        <UserPlus className="h-4 w-4 mr-2" />
-                    ) : (
-                        <LogIn className="h-4 w-4 mr-2" />
-                    )}
-                    {isLoading ? (isSignUp ? 'Cadastrando...' : 'Entrando...') : (isSignUp ? 'Cadastrar' : 'Entrar')}
-                </Button>
+                {/* Campo de Senha (Oculto no Magic Link) */}
+                {!useMagicLink && (
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="sr-only">Senha</FormLabel>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                        <Input 
+                                            placeholder="Senha" 
+                                            {...field} 
+                                            className="pl-10 h-10"
+                                            type="password"
+                                        />
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
+                
+                {magicLinkSent ? (
+                    <div className="text-sm text-center text-green-600 dark:text-green-400 p-2 border border-green-300 rounded">
+                        Link enviado! Verifique sua caixa de entrada.
+                    </div>
+                ) : (
+                    <Button 
+                        type="submit" 
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white h-10"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : useMagicLink ? (
+                            <Send className="h-4 w-4 mr-2" />
+                        ) : isSignUp ? (
+                            <UserPlus className="h-4 w-4 mr-2" />
+                        ) : (
+                            <LogIn className="h-4 w-4 mr-2" />
+                        )}
+                        {isLoading ? `Aguarde...` : (useMagicLink ? 'Enviar Link de Acesso' : (isSignUp ? 'Cadastrar' : 'Entrar'))}
+                    </Button>
+                )}
             </form>
 
-            <Button
-                variant="link"
-                onClick={() => setIsSignUp(prev => !prev)}
-                className="w-full text-sm mt-2 p-0 h-auto text-gray-500 dark:text-gray-400 hover:text-blue-600"
-                disabled={isLoading}
-            >
-                {isSignUp ? 'Já tem conta? Faça Login' : 'Não tem conta? Cadastre-se'}
-            </Button>
+            {/* Botões de Alternância de Modo */}
+            <div className="flex flex-col space-y-2 mt-3">
+                <Button
+                    variant="link"
+                    onClick={() => handleToggleMode(isSignUp ? 'login' : 'signup')}
+                    className="w-full text-sm p-0 h-auto text-gray-500 dark:text-gray-400 hover:text-blue-600"
+                    disabled={isLoading}
+                >
+                    {isSignUp ? 'Já tem conta? Faça Login' : 'Não tem conta? Cadastre-se'}
+                </Button>
+                
+                <Button
+                    variant="link"
+                    onClick={() => handleToggleMode(useMagicLink ? 'login' : 'magiclink')}
+                    className="w-full text-sm p-0 h-auto text-gray-500 dark:text-gray-400 hover:text-blue-600"
+                    disabled={isLoading}
+                >
+                    {useMagicLink ? 'Usar Email/Senha' : 'Acessar sem Senha (Magic Link)'}
+                </Button>
+            </div>
         </Form>
     );
 };
