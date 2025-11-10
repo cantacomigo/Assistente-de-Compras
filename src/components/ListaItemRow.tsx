@@ -8,16 +8,30 @@ import { cn } from '@/lib/utils';
 interface ListaItemRowProps {
     item: ItemCompra;
     index: number;
-    updateItem: (index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max', value: string | number) => void;
+    updateItem: (index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max', value: string | number | null) => void;
     removeItem: (index: number) => void;
 }
 
 const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, removeItem }) => {
     
     const handlePriceChange = (supermercado: 'proenca' | 'iquegami' | 'max', value: string) => {
-        // Substitui vírgula por ponto para parsing e garante que é um número
-        const numericValue = parseFloat(value.replace(',', '.') || '0');
-        updateItem(index, supermercado, isNaN(numericValue) ? null : numericValue);
+        const cleanedValue = value.replace(',', '.').trim();
+        
+        if (cleanedValue === '') {
+            // Se o input estiver vazio, salva null
+            updateItem(index, supermercado, null);
+            return;
+        }
+
+        const numericValue = parseFloat(cleanedValue);
+        
+        // Se for NaN ou negativo, salva null (para indicar preço não inserido ou inválido)
+        if (isNaN(numericValue) || numericValue < 0) {
+            updateItem(index, supermercado, null);
+        } else {
+            // Salva o valor numérico, garantindo 2 casas decimais para precisão
+            updateItem(index, supermercado, parseFloat(numericValue.toFixed(2)));
+        }
     };
 
     const formatPrice = (price: number | null): string => {
