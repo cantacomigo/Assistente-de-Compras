@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, Lock, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 
@@ -16,12 +16,7 @@ const formSchema = z.object({
 
 type LoginFormValues = z.infer<typeof formSchema>;
 
-interface LoginFormProps {
-    isSignUp: boolean;
-    setIsSignUp: (isSignUp: boolean) => void;
-}
-
-const LoginForm: React.FC<LoginFormProps> = ({ isSignUp, setIsSignUp }) => {
+const LoginForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const form = useForm<LoginFormValues>({
@@ -35,38 +30,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ isSignUp, setIsSignUp }) => {
     const onSubmit = async (values: LoginFormValues) => {
         setIsLoading(true);
         
-        let error;
-        let message;
-
-        if (isSignUp) {
-            // Cadastro
-            const { error: signUpError } = await supabase.auth.signUp({
-                email: values.email,
-                password: values.password,
-            });
-            error = signUpError;
-            message = "Confirmação enviada! Verifique seu email para ativar sua conta.";
-        } else {
-            // Login
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-                email: values.email,
-                password: values.password,
-            });
-            error = signInError;
-            message = "Login realizado com sucesso!";
-        }
-
+        // Login (Sign In)
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: values.email,
+            password: values.password,
+        });
+        
         setIsLoading(false);
 
-        if (error) {
-            showError(`Erro de autenticação: ${error.message}`);
+        if (signInError) {
+            showError(`Erro de login: ${signInError.message}`);
         } else {
-            showSuccess(message);
-            if (isSignUp) {
-                // Após o cadastro, o usuário precisa confirmar o email, então não navegamos.
-                // Podemos voltar para a tela de login para que ele aguarde a confirmação.
-                setIsSignUp(false);
-            }
+            showSuccess("Login realizado com sucesso!");
         }
     };
 
@@ -104,7 +79,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ isSignUp, setIsSignUp }) => {
                                 <div className="relative">
                                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input 
-                                        placeholder="Senha (mínimo 6 caracteres)" 
+                                        placeholder="Senha" 
                                         {...field} 
                                         className="pl-10 h-10"
                                         type="password"
@@ -123,21 +98,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ isSignUp, setIsSignUp }) => {
                 >
                     {isLoading ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : isSignUp ? (
-                        <UserPlus className="h-4 w-4 mr-2" />
                     ) : (
                         <LogIn className="h-4 w-4 mr-2" />
                     )}
-                    {isLoading ? 'Processando...' : isSignUp ? 'Cadastrar' : 'Entrar'}
-                </Button>
-
-                <Button 
-                    type="button" 
-                    variant="link" 
-                    onClick={() => setIsSignUp(!isSignUp)}
-                    className="w-full text-sm text-gray-500 dark:text-gray-400"
-                >
-                    {isSignUp ? 'Já tem conta? Faça Login' : 'Não tem conta? Cadastre-se'}
+                    {isLoading ? 'Entrando...' : 'Entrar'}
                 </Button>
             </form>
         </Form>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogIn, LogOut, User as UserIcon, UserPlus } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
@@ -9,7 +9,6 @@ import LoginForm from './LoginForm';
 
 const LoginOpcional: React.FC = () => {
     const { user, isLoading } = useSession();
-    const [isSignUp, setIsSignUp] = React.useState(false);
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
@@ -65,18 +64,14 @@ const LoginOpcional: React.FC = () => {
         <Card className="mt-6 border-blue-200 bg-blue-50/50 dark:bg-gray-800">
             <CardHeader className="p-3 pb-1">
                 <CardTitle className="text-base flex items-center text-blue-700 dark:text-blue-400">
-                    {isSignUp ? <UserPlus className="h-4 w-4 mr-2" /> : <LogIn className="h-4 w-4 mr-2" />}
-                    {isSignUp ? 'Cadastro' : 'Login Opcional'}
+                    <LogIn className="h-4 w-4 mr-2" /> Login Opcional
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-1">
-                <LoginForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
+                <LoginForm />
             </CardContent>
             <CardContent className="p-3 pt-0 text-xs text-gray-500 dark:text-gray-400">
-                {isSignUp 
-                    ? 'Após o cadastro, verifique seu email para confirmar a conta.'
-                    : 'Faça login para salvar suas listas e comparações.'
-                }
+                Faça login para salvar suas listas e comparações.
             </CardContent>
         </Card>
     );
