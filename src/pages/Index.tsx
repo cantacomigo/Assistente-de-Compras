@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, ListPlus } from 'lucide-react';
 import { gerarListaInicial } from '@/utils/list-generator';
 import LoginOpcional from '@/components/LoginOpcional';
+import ListasSalvas from '@/components/ListasSalvas';
 import { showError } from '@/utils/toast';
 
 interface InicioProps {
@@ -79,6 +80,8 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
                         <LoginOpcional />
                     </CardContent>
                 </Card>
+                
+                <ListasSalvas setNumPessoas={setNumPessoas} />
             </div>
         </Layout>
     );

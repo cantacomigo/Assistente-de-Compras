@@ -8,6 +8,8 @@ import ListaItemRow from '@/components/ListaItemRow';
 import { Plus, Calculator, Save, Loader2, ArrowLeft } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { calcularComparacao } from '@/utils/list-generator';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ListaDeComprasProps {
     list: ItemCompra[];
@@ -20,7 +22,9 @@ interface ListaDeComprasProps {
 const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setComparisonResult, numPessoas }) => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useSession();
     const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Se a lista inicial vier da navegação (Tela Inicial), use-a.
     useEffect(() => {
@@ -28,7 +32,8 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             setList(location.state.initialList);
         } else if (list.length === 0) {
             // Se a lista estiver vazia e não houver estado inicial, redireciona para o início
-            navigate('/');
+            // Isso evita que o usuário caia nesta página sem dados.
+            // navigate('/');
         }
     }, [location.state, list, setList, navigate]);
 
@@ -88,9 +93,40 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         }, 500);
     };
 
-    const handleSaveList = () => {
-        // Implementação futura: Salvar lista no Supabase ou Local Storage
-        showSuccess("Lista salva localmente! (Implementação de banco de dados em andamento)");
+    const handleSaveList = async () => {
+        if (!user) {
+            showError("Você precisa estar logado para salvar listas.");
+            return;
+        }
+        
+        if (list.length === 0) {
+            showError("A lista está vazia. Adicione itens antes de salvar.");
+            return;
+        }
+
+        setIsSaving(true);
+        
+        // Por simplicidade, vamos sempre salvar como uma nova lista por enquanto.
+        // Em uma implementação mais complexa, perguntaríamos o nome ou se é uma atualização.
+        const listName = `Lista de ${new Date().toLocaleDateString('pt-BR')}`;
+
+        const { error } = await supabase
+            .from('shopping_lists')
+            .insert({
+                user_id: user.id,
+                name: listName,
+                num_pessoas: numPessoas,
+                list_data: list,
+            });
+
+        setIsSaving(false);
+
+        if (error) {
+            console.error("Erro ao salvar lista:", error);
+            showError("Erro ao salvar lista. Tente novamente.");
+        } else {
+            showSuccess(`Lista "${listName}" salva com sucesso!`);
+        }
     };
 
     if (list.length === 0 && !location.state?.initialList) {
@@ -98,7 +134,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             <Layout>
                 <div className="text-center p-10">
                     <h2 className="text-2xl font-bold mb-4">Lista de Compras</h2>
-                    <p className="text-lg">Carregando lista ou lista vazia. Redirecionando...</p>
+                    <p className="text-lg">Sua lista está vazia. Volte para a página inicial para gerar uma lista ou adicione itens manualmente.</p>
                     <Button onClick={() => navigate('/')} className="mt-4">
                         <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Início
                     </Button>
@@ -126,9 +162,14 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                         <Button 
                             onClick={handleSaveList} 
                             variant="secondary"
-                            disabled={isLoading}
+                            disabled={isLoading || isSaving || !user}
                         >
-                            <Save className="h-4 w-4 mr-2" /> Salvar Lista
+                            {isSaving ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                                <Save className="h-4 w-4 mr-2" />
+                            )}
+                            {user ? 'Salvar Lista' : 'Login Necessário'}
                         </Button>
                         <Button 
                             onClick={handleCalculate} 
