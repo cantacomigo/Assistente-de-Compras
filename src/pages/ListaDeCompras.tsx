@@ -95,8 +95,9 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
     if (list.length === 0 && !location.state?.initialList) {
         return (
-            <Layout title="Lista de Compras">
+            <Layout>
                 <div className="text-center p-10">
+                    <h2 className="text-2xl font-bold mb-4">Lista de Compras</h2>
                     <p className="text-lg">Carregando lista ou lista vazia. Redirecionando...</p>
                     <Button onClick={() => navigate('/')} className="mt-4">
                         <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Início
@@ -107,7 +108,10 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     }
 
     return (
-        <Layout title={`Lista de Compras (Para ${numPessoas} Pessoas)`}>
+        <Layout>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+                Lista de Compras (Para {numPessoas} Pessoas)
+            </h2>
             <div className="space-y-6">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
                     <Button 

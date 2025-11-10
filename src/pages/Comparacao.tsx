@@ -56,7 +56,10 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
     };
 
     return (
-        <Layout title="Resultados da Comparação">
+        <Layout>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+                Resultados da Comparação
+            </h2>
             <div className="space-y-8">
                 
                 {/* Seção de Sugestão */}

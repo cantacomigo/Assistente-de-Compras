@@ -37,7 +37,7 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
     };
 
     return (
-        <Layout title="Comparador de Preços Supermercados">
+        <Layout>
             <div className="max-w-lg mx-auto">
                 <Card className="shadow-lg border-t-4 border-blue-500">
                     <CardHeader>
