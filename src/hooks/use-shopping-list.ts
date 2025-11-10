@@ -5,12 +5,14 @@ interface ShoppingListState {
     list: ItemCompra[];
     comparisonResult: ResultadoComparacao | null;
     numPessoas: number;
+    currentListId: string | null; // Novo campo para rastrear o ID da lista salva
 }
 
 const initialState: ShoppingListState = {
     list: [],
     comparisonResult: null,
     numPessoas: 1,
+    currentListId: null,
 };
 
 export function useShoppingList() {
@@ -28,6 +30,7 @@ export function useShoppingList() {
     
     const setComparisonResult = (result: ResultadoComparacao) => setState(prev => ({ ...prev, comparisonResult: result }));
     const setNumPessoas = (num: number) => setState(prev => ({ ...prev, numPessoas: num }));
+    const setCurrentListId = (id: string | null) => setState(prev => ({ ...prev, currentListId: id }));
     const resetState = () => setState(initialState);
 
     return {
@@ -35,6 +38,7 @@ export function useShoppingList() {
         setList,
         setComparisonResult,
         setNumPessoas,
+        setCurrentListId, // Exportando a nova função
         resetState,
     };
 }

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
 import ListaItemRow from '@/components/ListaItemRow';
-import { Plus, Calculator, Save, Loader2, Tag } from 'lucide-react';
+import { Plus, Calculator, Save, Loader2, Tag, Edit } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { calcularComparacao } from '@/utils/list-generator';
 import { useSession } from '@/contexts/SessionContext';
@@ -16,10 +16,12 @@ interface ListaDeComprasProps {
     list: ItemCompra[];
     setList: Dispatch<SetStateAction<ItemCompra[]>>; 
     setComparisonResult: (result: ResultadoComparacao | null) => void;
-    numPessoas: number; // Mantido para compatibilidade com o hook, mas não usado no título
+    numPessoas: number;
+    currentListId: string | null; // Novo
+    setCurrentListId: (id: string | null) => void; // Novo
 }
 
-const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setComparisonResult, numPessoas }) => {
+const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setComparisonResult, numPessoas, currentListId, setCurrentListId }) => {
     const navigate = useNavigate();
     const { user } = useSession();
     const [isLoading, setIsLoading] = useState(false);
@@ -101,23 +103,54 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         setIsSaving(true);
         
         const listName = `Lista de ${new Date().toLocaleDateString('pt-BR')}`;
+        
+        let error;
+        let successMessage;
 
-        const { error } = await supabase
-            .from('shopping_lists')
-            .insert({
-                user_id: user.id,
-                name: listName,
-                num_pessoas: numPessoas,
-                list_data: list,
-            });
+        if (currentListId) {
+            // UPDATE: Atualiza a lista existente
+            const { error: updateError } = await supabase
+                .from('shopping_lists')
+                .update({
+                    name: listName, // Mantém o nome padrão ou poderia permitir edição
+                    num_pessoas: numPessoas,
+                    list_data: list,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', currentListId);
+            
+            error = updateError;
+            successMessage = `Lista atualizada com sucesso!`;
+
+        } else {
+            // INSERT: Salva uma nova lista
+            const { data, error: insertError } = await supabase
+                .from('shopping_lists')
+                .insert({
+                    user_id: user.id,
+                    name: listName,
+                    num_pessoas: numPessoas,
+                    list_data: list,
+                })
+                .select('id')
+                .single();
+            
+            error = insertError;
+            successMessage = `Lista "${listName}" salva com sucesso!`;
+
+            if (data) {
+                // Define o ID da lista recém-criada como a lista atual
+                setCurrentListId(data.id);
+            }
+        }
 
         setIsSaving(false);
 
         if (error) {
-            console.error("Erro ao salvar lista:", error);
-            showError("Erro ao salvar lista. Tente novamente.");
+            console.error("Erro ao salvar/atualizar lista:", error);
+            showError("Erro ao salvar/atualizar lista. Tente novamente.");
         } else {
-            showSuccess(`Lista "${listName}" salva com sucesso!`);
+            showSuccess(successMessage);
         }
     };
 
@@ -136,6 +169,9 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     }, [list]);
 
     const categories = Object.keys(groupedList).sort();
+    
+    const saveButtonText = currentListId ? 'Atualizar Lista' : 'Salvar Lista';
+    const saveButtonIcon = currentListId ? Edit : Save;
 
     return (
         <Layout>
@@ -161,9 +197,9 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                             {isSaving ? (
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             ) : (
-                                <Save className="h-4 w-4 mr-2" />
+                                React.createElement(saveButtonIcon, { className: "h-4 w-4 mr-2" })
                             )}
-                            {user ? 'Salvar Lista' : 'Login Necessário'}
+                            {user ? saveButtonText : 'Login Necessário'}
                         </Button>
                         <Button 
                             onClick={handleCalculate} 
@@ -179,6 +215,12 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                         </Button>
                     </div>
                 </div>
+
+                {currentListId && (
+                    <div className="text-sm text-gray-600 dark:text-gray-400 p-2 border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded">
+                        Você está editando uma lista salva. Clique em "{saveButtonText}" para salvar as alterações.
+                    </div>
+                )}
 
                 <div className="rounded-lg border shadow-md">
                     <Table className="min-w-full">

@@ -11,15 +11,17 @@ interface InicioProps {
     setNumPessoas: (num: number) => void;
     setList: Dispatch<SetStateAction<ItemCompra[]>>;
     setComparisonResult: (result: ResultadoComparacao | null) => void;
+    setCurrentListId: (id: string | null) => void; // Novo
 }
 
-const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonResult }) => {
+const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonResult, setCurrentListId }) => {
     const navigate = useNavigate();
 
     const handleCreateManualList = () => {
         setNumPessoas(1); 
         setList([]); // Garante que a lista global está vazia
         setComparisonResult(null); // Limpa resultados anteriores
+        setCurrentListId(null); // Zera o ID da lista atual
         navigate('/lista'); 
     };
 
@@ -40,6 +42,7 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
                     <ListasSalvas 
                         setNumPessoas={setNumPessoas} 
                         setList={setList}
+                        setCurrentListId={setCurrentListId} // Novo
                     />
                     <ComparacoesSalvas 
                         setList={setList}
