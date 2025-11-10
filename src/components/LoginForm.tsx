@@ -17,6 +17,9 @@ const formSchema = z.object({
 
 type LoginFormValues = z.infer<typeof formSchema>;
 
+// URL de redirecionamento correta para o ambiente de desenvolvimento Dyad
+const REDIRECT_URL = "http://localhost:8080";
+
 const LoginForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSignUp, setIsSignUp] = useState(false);
@@ -51,7 +54,8 @@ const LoginForm: React.FC = () => {
             const { error: otpError } = await supabase.auth.signInWithOtp({
                 email: values.email,
                 options: {
-                    emailRedirectTo: window.location.origin, // Redireciona de volta para a página inicial
+                    // Usamos a URL explícita para garantir que o redirecionamento funcione no ambiente Dyad
+                    emailRedirectTo: REDIRECT_URL, 
                 }
             });
             error = otpError;
