@@ -1,19 +1,19 @@
-import React, { useEffect, useState, useCallback, SetStateAction, Dispatch } from 'react';
+import React, { useEffect, useState, useCallback, SetStateAction, Dispatch, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
 import ListaItemRow from '@/components/ListaItemRow';
-import { Plus, Calculator, Save, Loader2, ArrowLeft } from 'lucide-react';
+import { Plus, Calculator, Save, Loader2, ArrowLeft, Tag } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { calcularComparacao } from '@/utils/list-generator';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface ListaDeComprasProps {
     list: ItemCompra[];
-    // setList agora aceita a função de atualização ou a nova lista
     setList: Dispatch<SetStateAction<ItemCompra[]>>; 
     setComparisonResult: (result: ResultadoComparacao) => void;
     numPessoas: number;
@@ -30,20 +30,16 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     useEffect(() => {
         if (location.state && location.state.initialList && list.length === 0) {
             setList(location.state.initialList);
-        } else if (list.length === 0) {
-            // Se a lista estiver vazia e não houver estado inicial, redireciona para o início
-            // Isso evita que o usuário caia nesta página sem dados.
-            // navigate('/');
         }
-    }, [location.state, list, setList, navigate]);
+    }, [location.state, list, setList]);
 
     const updateItem = useCallback((index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max', value: string | number | null) => {
         setList(prevList => {
             const newList = [...prevList];
             const item = newList[index];
 
-            if (field === 'nome' || field === 'unidade') {
-                item[field] = value as string;
+            if (field === 'nome' || field === 'unidade' || field === 'categoria') {
+                item[field as 'nome' | 'unidade' | 'categoria'] = value as string;
             } else if (field === 'quantidade') {
                 item[field] = value as number;
             } else if (['proenca', 'iquegami', 'max'].includes(field as string)) {
@@ -64,6 +60,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             quantidade: 1,
             unidade: "un",
             precos: { proenca: null, iquegami: null, max: null },
+            categoria: "Outros", // Categoria padrão para novos itens
         };
         setList(prevList => [...prevList, newItem]);
     };
@@ -106,8 +103,6 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
         setIsSaving(true);
         
-        // Por simplicidade, vamos sempre salvar como uma nova lista por enquanto.
-        // Em uma implementação mais complexa, perguntaríamos o nome ou se é uma atualização.
         const listName = `Lista de ${new Date().toLocaleDateString('pt-BR')}`;
 
         const { error } = await supabase
@@ -128,6 +123,21 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             showSuccess(`Lista "${listName}" salva com sucesso!`);
         }
     };
+
+    // Agrupa a lista por categoria
+    const groupedList = useMemo(() => {
+        const groups: Record<string, ItemCompra[]> = {};
+        list.forEach(item => {
+            const category = item.categoria || "Outros";
+            if (!groups[category]) {
+                groups[category] = [];
+            }
+            groups[category].push(item);
+        });
+        return groups;
+    }, [list]);
+
+    const categories = Object.keys(groupedList).sort();
 
     if (list.length === 0 && !location.state?.initialList) {
         return (
@@ -186,7 +196,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-lg border shadow-md">
+                <div className="rounded-lg border shadow-md">
                     <Table className="min-w-full">
                         <TableHeader className="bg-gray-100 dark:bg-gray-800 sticky top-0">
                             <TableRow>
@@ -198,21 +208,41 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                                 <TableHead className="w-10 text-center">Remover</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
-                            {list.map((item, index) => (
-                                <ListaItemRow 
-                                    key={item.id} 
-                                    item={item} 
-                                    index={index} 
-                                    updateItem={updateItem} 
-                                    removeItem={removeItem} 
-                                />
-                            ))}
-                        </TableBody>
-                        {list.length === 0 && (
-                            <TableCaption>Sua lista está vazia. Adicione itens!</TableCaption>
-                        )}
                     </Table>
+                    
+                    {list.length === 0 ? (
+                        <TableCaption className="py-4">Sua lista está vazia. Adicione itens!</TableCaption>
+                    ) : (
+                        <Accordion type="multiple" className="w-full">
+                            {categories.map((category) => (
+                                <AccordionItem key={category} value={category} className="border-t">
+                                    <AccordionTrigger className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-3 font-semibold text-lg">
+                                        <Tag className="h-5 w-5 mr-2 text-gray-500" />
+                                        {category} ({groupedList[category].length} itens)
+                                    </AccordionTrigger>
+                                    <AccordionContent className="p-0">
+                                        <Table className="w-full">
+                                            <TableBody>
+                                                {groupedList[category].map((item, index) => {
+                                                    // Encontra o índice original na lista não agrupada para garantir que o updateItem funcione
+                                                    const originalIndex = list.findIndex(i => i.id === item.id);
+                                                    return (
+                                                        <ListaItemRow 
+                                                            key={item.id} 
+                                                            item={item} 
+                                                            index={originalIndex} 
+                                                            updateItem={updateItem} 
+                                                            removeItem={removeItem} 
+                                                        />
+                                                    );
+                                                })}
+                                            </TableBody>
+                                        </Table>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    )}
                 </div>
             </div>
         </Layout>

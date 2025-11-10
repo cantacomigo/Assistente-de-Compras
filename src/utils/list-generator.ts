@@ -2,18 +2,27 @@ import { ItemCompra, ResultadoComparacao } from "@/types/list";
 
 // Base de itens essenciais por pessoa/grupo
 const ITENS_BASE = [
-  { nome: "Arroz", base: 1, unidade: "kg", porPessoa: true },
-  { nome: "Feijão", base: 1, unidade: "kg", porPessoa: true },
-  { nome: "Leite", base: 1, unidade: "L", porPessoa: true },
-  { nome: "Óleo de Cozinha", base: 1, unidade: "ml", divisor: 2, quantidadeBase: 900 }, // 900ml por 2 pessoas
-  { nome: "Açúcar", base: 1, unidade: "kg", divisor: 4 }, // 1kg por 4 pessoas
-  { nome: "Café", base: 1, unidade: "g", divisor: 4, quantidadeBase: 500 }, // 500g por 4 pessoas
-  { nome: "Macarrão", base: 1, unidade: "pacote (500g)", porPessoa: true },
-  { nome: "Carne Moída", base: 0.5, unidade: "kg", porPessoa: true }, // 500g por pessoa
-  { nome: "Ovos", base: 1, unidade: "dúzia", divisor: 4 }, // 1 dúzia por 4 pessoas
-  { nome: "Pão de Forma", base: 1, unidade: "pacote", divisor: 2 }, // 1 pacote por 2 pessoas
-  { nome: "Banana", base: 1, unidade: "kg", porPessoa: true },
-  { nome: "Tomate", base: 1, unidade: "kg", divisor: 2 }, // 1kg por 2 pessoas
+  // Mercearia Seca
+  { nome: "Arroz", base: 1, unidade: "kg", porPessoa: true, categoria: "Mercearia Seca" },
+  { nome: "Feijão", base: 1, unidade: "kg", porPessoa: true, categoria: "Mercearia Seca" },
+  { nome: "Óleo de Cozinha", base: 1, unidade: "ml", divisor: 2, quantidadeBase: 900, categoria: "Mercearia Seca" }, // 900ml por 2 pessoas
+  { nome: "Açúcar", base: 1, unidade: "kg", divisor: 4, categoria: "Mercearia Seca" }, // 1kg por 4 pessoas
+  { nome: "Café", base: 1, unidade: "g", divisor: 4, quantidadeBase: 500, categoria: "Mercearia Seca" }, // 500g por 4 pessoas
+  { nome: "Macarrão", base: 1, unidade: "pacote (500g)", porPessoa: true, categoria: "Mercearia Seca" },
+  
+  // Laticínios e Ovos
+  { nome: "Leite", base: 1, unidade: "L", porPessoa: true, categoria: "Laticínios e Ovos" },
+  { nome: "Ovos", base: 1, unidade: "dúzia", divisor: 4, categoria: "Laticínios e Ovos" }, // 1 dúzia por 4 pessoas
+  
+  // Carnes e Proteínas
+  { nome: "Carne Moída", base: 0.5, unidade: "kg", porPessoa: true, categoria: "Carnes e Proteínas" }, // 500g por pessoa
+  
+  // Hortifrúti
+  { nome: "Banana", base: 1, unidade: "kg", porPessoa: true, categoria: "Hortifrúti" },
+  { nome: "Tomate", base: 1, unidade: "kg", divisor: 2, categoria: "Hortifrúti" }, // 1kg por 2 pessoas
+
+  // Padaria
+  { nome: "Pão de Forma", base: 1, unidade: "pacote", divisor: 2, categoria: "Padaria" }, // 1 pacote por 2 pessoas
 ];
 
 /**
@@ -48,6 +57,8 @@ export function gerarListaInicial(numPessoas: number): ItemCompra[] {
         iquegami: null,
         max: null,
       },
+      // Adiciona a categoria ao item
+      categoria: item.categoria,
     };
   });
 }

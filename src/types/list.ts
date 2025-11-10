@@ -8,6 +8,7 @@ export interface ItemCompra {
     iquegami: number | null;
     max: number | null;
   };
+  categoria: string; // Novo campo
 }
 
 export interface ResultadoComparacao {
