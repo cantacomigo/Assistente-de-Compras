@@ -35,13 +35,11 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
         }
     };
 
-    // Esta função agora apenas retorna o valor como string, usando vírgula para exibição
-    // mas sem forçar a formatação completa, permitindo que o usuário digite livremente.
+    // Formata o preço para exibição no input (sempre com duas casas decimais e vírgula)
     const formatPriceForInput = (price: number | null): string => {
         if (price === null || isNaN(price)) return '';
-        // Retorna o valor com vírgula para exibição, mas sem forçar o toFixed(2)
-        // O toFixed(2) é aplicado apenas no momento de salvar o estado (handlePriceChange)
-        return String(price).replace('.', ',');
+        // Usa toFixed(2) para garantir duas casas decimais e substitui ponto por vírgula
+        return price.toFixed(2).replace('.', ',');
     };
 
     const isPriceValid = (price: number | null) => price !== null && price >= 0;
