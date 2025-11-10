@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ItemCompra } from '@/types/list';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,34 +12,72 @@ interface ListaItemRowProps {
     removeItem: (index: number) => void;
 }
 
+// Função auxiliar para formatar o preço para exibição (X,XX)
+const formatPriceToBRL = (price: number | null): string => {
+    if (price === null || isNaN(price)) return '';
+    return price.toFixed(2).replace('.', ',');
+};
+
+// Função auxiliar para converter a entrada BRL para número
+const parsePriceFromBRL = (value: string): number | null => {
+    const cleanedValue = value.replace(',', '.').trim();
+    if (cleanedValue === '') return null;
+
+    const numericValue = parseFloat(cleanedValue);
+    if (isNaN(numericValue) || numericValue < 0) return null;
+    
+    // Garante 2 casas decimais antes de salvar no estado global
+    return parseFloat(numericValue.toFixed(2));
+};
+
 const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, removeItem }) => {
     
-    const handlePriceChange = (supermercado: 'proenca' | 'iquegami' | 'max', value: string) => {
-        // Substitui vírgula por ponto para que parseFloat funcione corretamente
-        const cleanedValue = value.replace(',', '.').trim();
-        
-        if (cleanedValue === '') {
-            // Se o input estiver vazio, salva null
-            updateItem(index, supermercado, null);
-            return;
-        }
+    // Estados locais para gerenciar a digitação dos preços
+    const [proencaInput, setProencaInput] = useState(formatPriceToBRL(item.precos.proenca));
+    const [iquegamiInput, setIquegamiInput] = useState(formatPriceToBRL(item.precos.iquegami));
+    const [maxInput, setMaxInput] = useState(formatPriceToBRL(item.precos.max));
 
-        const numericValue = parseFloat(cleanedValue);
+    // Sincroniza o estado local com o estado global (item.precos) quando o item muda
+    useEffect(() => {
+        setProencaInput(formatPriceToBRL(item.precos.proenca));
+        setIquegamiInput(formatPriceToBRL(item.precos.iquegami));
+        setMaxInput(formatPriceToBRL(item.precos.max));
+    }, [item.precos.proenca, item.precos.iquegami, item.precos.max]);
+
+    const handleBlur = (supermercado: 'proenca' | 'iquegami' | 'max', inputValue: string) => {
+        const numericValue = parsePriceFromBRL(inputValue);
         
-        // Se for NaN ou negativo, salva null (para indicar preço não inserido ou inválido)
-        if (isNaN(numericValue) || numericValue < 0) {
-            updateItem(index, supermercado, null);
+        // 1. Atualiza o estado global (list)
+        updateItem(index, supermercado, numericValue);
+
+        // 2. Re-formata o estado local para garantir que ele exiba X,XX
+        if (numericValue !== null) {
+            const formattedValue = formatPriceToBRL(numericValue);
+            switch (supermercado) {
+                case 'proenca':
+                    setProencaInput(formattedValue);
+                    break;
+                case 'iquegami':
+                    setIquegamiInput(formattedValue);
+                    break;
+                case 'max':
+                    setMaxInput(formattedValue);
+                    break;
+            }
         } else {
-            // Salva o valor numérico, garantindo 2 casas decimais para precisão
-            updateItem(index, supermercado, parseFloat(numericValue.toFixed(2)));
+             // Se o valor for null (vazio ou inválido), limpa o input local
+             switch (supermercado) {
+                case 'proenca':
+                    setProencaInput('');
+                    break;
+                case 'iquegami':
+                    setIquegamiInput('');
+                    break;
+                case 'max':
+                    setMaxInput('');
+                    break;
+            }
         }
-    };
-
-    // Formata o preço para exibição no input (sempre com duas casas decimais e vírgula)
-    const formatPriceForInput = (price: number | null): string => {
-        if (price === null || isNaN(price)) return '';
-        // Usa toFixed(2) para garantir duas casas decimais e substitui ponto por vírgula
-        return price.toFixed(2).replace('.', ',');
     };
 
     const isPriceValid = (price: number | null) => price !== null && price >= 0;
@@ -75,16 +113,20 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
             </td>
 
             {/* Preços (Inputs Decimais BRL) */}
-            {['proenca', 'iquegami', 'max'].map((supermercado) => {
-                const key = supermercado as 'proenca' | 'iquegami' | 'max';
-                const price = item.precos[key];
+            {[
+                { key: 'proenca', inputState: proencaInput, setInputState: setProencaInput },
+                { key: 'iquegami', inputState: iquegamiInput, setInputState: setIquegamiInput },
+                { key: 'max', inputState: maxInput, setInputState: setMaxInput },
+            ].map(({ key, inputState, setInputState }) => {
+                const price = item.precos[key as 'proenca' | 'iquegami' | 'max'];
                 
                 return (
                     <td key={key} className="p-2 w-[100px]">
                         <Input
                             placeholder="0,00"
-                            value={formatPriceForInput(price)}
-                            onChange={(e) => handlePriceChange(key, e.target.value)}
+                            value={inputState}
+                            onChange={(e) => setInputState(e.target.value)}
+                            onBlur={() => handleBlur(key as 'proenca' | 'iquegami' | 'max', inputState)}
                             className={cn(
                                 "w-full h-8 p-1 text-right font-mono",
                                 !isPriceValid(price) && price !== null && "border-red-500 focus-visible:ring-red-500"
