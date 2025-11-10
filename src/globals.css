@@ -116,7 +116,8 @@
   }
 
   /* Remove o fundo para economizar tinta */
-  body, .bg-gray-50, .dark\\:bg-gray-900, .bg-green-50, .dark\\:bg-green-900\\/20, .bg-gray-100, .dark\\:bg-gray-800 {
+  /* Simplificamos o seletor para evitar erros de parsing com barras (/) */
+  body, .bg-gray-50, .dark\\:bg-gray-900, .bg-green-50, .bg-gray-100, .dark\\:bg-gray-800 {
     background-color: white !important;
     color: black !important;
   }
