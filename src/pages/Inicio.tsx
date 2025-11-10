@@ -14,7 +14,7 @@ interface InicioProps {
     setNumPessoas: (num: number) => void;
 }
 
-const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
+const Inicio: React.FC<InicioProps> = ({ setNumPessoas }) => {
     const [numPessoasInput, setNumPessoasInput] = useState(1);
     const navigate = useNavigate();
 
@@ -84,4 +84,4 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
     );
 };
 
-export default Index;
+export default Inicio;
