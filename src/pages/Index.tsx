@@ -9,6 +9,7 @@ import { Users, ListPlus } from 'lucide-react';
 import { gerarListaInicial } from '@/utils/list-generator';
 import LoginOpcional from '@/components/LoginOpcional';
 import ListasSalvas from '@/components/ListasSalvas';
+import ComparacoesSalvas from '@/components/ComparacoesSalvas';
 import { showError } from '@/utils/toast';
 
 interface InicioProps {
@@ -82,6 +83,7 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
                 </Card>
                 
                 <ListasSalvas setNumPessoas={setNumPessoas} />
+                <ComparacoesSalvas />
             </div>
         </Layout>
     );
