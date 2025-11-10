@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
 import { ArrowLeft, Share2, FileText, Save, TrendingUp } from 'lucide-react';
 import { formatBRL } from '@/utils/format';
-import { showSuccess } from '@/utils/toast';
+import { showSuccess, showError } from '@/utils/toast';
 
 interface ComparacaoProps {
     list: ItemCompra[];
@@ -21,7 +21,7 @@ const Comparacao: React.FC<ComparacaoProps> = ({ list, comparisonResult }) => {
         // Redireciona se não houver dados de comparação
         React.useEffect(() => {
             if (!comparisonResult) {
-                showSuccess("Nenhum resultado de comparação encontrado. Por favor, gere uma lista primeiro.");
+                showError("Nenhum resultado de comparação encontrado. Por favor, gere uma lista primeiro.");
                 navigate('/');
             }
         }, [comparisonResult, navigate]);
