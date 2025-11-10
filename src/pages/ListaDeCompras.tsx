@@ -28,10 +28,15 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
     // Se a lista inicial vier da navegação (Tela Inicial), use-a.
     useEffect(() => {
-        if (location.state && location.state.initialList && list.length === 0) {
-            setList(location.state.initialList);
+        // Verifica se há um estado de navegação com initialList
+        if (location.state && 'initialList' in location.state) {
+            const initialList = location.state.initialList as ItemCompra[];
+            // Só atualiza se a lista atual estiver vazia ou se a lista inicial for diferente
+            if (list.length === 0 || initialList.length > 0) {
+                setList(initialList);
+            }
         }
-    }, [location.state, list, setList]);
+    }, [location.state, setList]);
 
     const updateItem = useCallback((index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max', value: string | number | null) => {
         setList(prevList => {
@@ -139,19 +144,8 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
     const categories = Object.keys(groupedList).sort();
 
-    if (list.length === 0 && !location.state?.initialList) {
-        return (
-            <Layout>
-                <div className="text-center p-10">
-                    <h2 className="text-2xl font-bold mb-4">Lista de Compras</h2>
-                    <p className="text-lg">Sua lista está vazia. Volte para a página inicial para gerar uma lista ou adicione itens manualmente.</p>
-                    <Button onClick={() => navigate('/')} className="mt-4">
-                        <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Início
-                    </Button>
-                </div>
-            </Layout>
-        );
-    }
+    // Removemos o bloco que impedia a renderização de uma lista vazia,
+    // pois agora o usuário pode começar com uma lista vazia.
 
     return (
         <Layout>
@@ -184,7 +178,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                         <Button 
                             onClick={handleCalculate} 
                             className="bg-green-600 hover:bg-green-700 text-white"
-                            disabled={isLoading}
+                            disabled={isLoading || list.length === 0}
                         >
                             {isLoading ? (
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -211,9 +205,9 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                     </Table>
                     
                     {list.length === 0 ? (
-                        <TableCaption className="py-4">Sua lista está vazia. Adicione itens!</TableCaption>
+                        <TableCaption className="py-4">Sua lista está vazia. Clique em "Adicionar Item" para começar!</TableCaption>
                     ) : (
-                        <Accordion type="multiple" className="w-full">
+                        <Accordion type="multiple" className="w-full" defaultValue={categories}>
                             {categories.map((category) => (
                                 <AccordionItem key={category} value={category} className="border-t">
                                     <AccordionTrigger className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-3 font-semibold text-lg">
@@ -223,7 +217,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                                     <AccordionContent className="p-0">
                                         <Table className="w-full">
                                             <TableBody>
-                                                {groupedList[category].map((item, index) => {
+                                                {groupedList[category].map((item) => {
                                                     // Encontra o índice original na lista não agrupada para garantir que o updateItem funcione
                                                     const originalIndex = list.findIndex(i => i.id === item.id);
                                                     return (

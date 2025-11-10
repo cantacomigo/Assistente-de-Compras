@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ListPlus } from 'lucide-react';
+import { Users, ListPlus, Edit } from 'lucide-react';
 import { gerarListaInicial } from '@/utils/list-generator';
 import LoginOpcional from '@/components/LoginOpcional';
 import ListasSalvas from '@/components/ListasSalvas';
@@ -38,6 +38,11 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
         navigate('/lista', { state: { initialList: listaGerada } });
     };
 
+    const handleCreateManualList = () => {
+        setNumPessoas(1); // Define o padrão de 1 pessoa para lista manual
+        navigate('/lista', { state: { initialList: [] } }); // Navega com lista vazia
+    };
+
     return (
         <Layout>
             <div className="max-w-lg mx-auto">
@@ -51,7 +56,7 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleGenerateList} className="space-y-6">
+                        <form onSubmit={handleGenerateList} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="numPessoas" className="text-lg flex items-center">
                                     <Users className="h-5 w-5 mr-2 text-green-600" />
@@ -74,9 +79,20 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas }) => {
                                 className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6 transition-all duration-300"
                             >
                                 <ListPlus className="h-6 w-6 mr-2" />
-                                Gerar Lista de Compras
+                                Gerar Lista Sugerida
                             </Button>
                         </form>
+
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <Button 
+                                onClick={handleCreateManualList} 
+                                variant="outline"
+                                className="w-full text-blue-600 border-blue-300 hover:bg-blue-50"
+                            >
+                                <Edit className="h-5 w-5 mr-2" />
+                                Criar Lista Manualmente
+                            </Button>
+                        </div>
                         
                         <LoginOpcional />
                     </CardContent>
