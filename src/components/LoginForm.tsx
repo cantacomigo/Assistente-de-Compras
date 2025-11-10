@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
+import { Mail, Lock, LogIn, Loader2, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 
@@ -18,6 +18,7 @@ type LoginFormValues = z.infer<typeof formSchema>;
 
 const LoginForm: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
+    const [isSignUp, setIsSignUp] = useState(false); // Estado para alternar entre Login e Cadastro
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(formSchema),
@@ -30,23 +31,39 @@ const LoginForm: React.FC = () => {
     const onSubmit = async (values: LoginFormValues) => {
         setIsLoading(true);
         
-        // Login (Sign In)
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: values.email,
-            password: values.password,
-        });
+        let error;
+        let successMessage;
+
+        if (isSignUp) {
+            // Cadastro (Sign Up)
+            const { error: signUpError } = await supabase.auth.signUp({
+                email: values.email,
+                password: values.password,
+            });
+            error = signUpError;
+            successMessage = "Cadastro realizado! Verifique seu email para confirmar a conta.";
+        } else {
+            // Login (Sign In)
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: values.email,
+                password: values.password,
+            });
+            error = signInError;
+            successMessage = "Login realizado com sucesso!";
+        }
         
         setIsLoading(false);
 
-        if (signInError) {
-            // Mensagem de erro mais amigável para credenciais inválidas
-            if (signInError.message.includes('Invalid login credentials')) {
+        if (error) {
+            if (error.message.includes('Invalid login credentials')) {
                 showError("Credenciais inválidas. Verifique seu email e senha.");
+            } else if (error.message.includes('Signups not allowed')) {
+                showError("O cadastro está desativado. Por favor, use uma conta existente ou peça ao administrador para habilitar o cadastro.");
             } else {
-                showError(`Erro de login: ${signInError.message}`);
+                showError(`Erro de autenticação: ${error.message}`);
             }
         } else {
-            showSuccess("Login realizado com sucesso!");
+            showSuccess(successMessage);
         }
     };
 
@@ -103,12 +120,23 @@ const LoginForm: React.FC = () => {
                 >
                     {isLoading ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : isSignUp ? (
+                        <UserPlus className="h-4 w-4 mr-2" />
                     ) : (
                         <LogIn className="h-4 w-4 mr-2" />
                     )}
-                    {isLoading ? 'Entrando...' : 'Entrar'}
+                    {isLoading ? (isSignUp ? 'Cadastrando...' : 'Entrando...') : (isSignUp ? 'Cadastrar' : 'Entrar')}
                 </Button>
             </form>
+
+            <Button
+                variant="link"
+                onClick={() => setIsSignUp(prev => !prev)}
+                className="w-full text-sm mt-2 p-0 h-auto text-gray-500 dark:text-gray-400 hover:text-blue-600"
+                disabled={isLoading}
+            >
+                {isSignUp ? 'Já tem conta? Faça Login' : 'Não tem conta? Cadastre-se'}
+            </Button>
         </Form>
     );
 };

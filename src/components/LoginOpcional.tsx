@@ -64,14 +64,14 @@ const LoginOpcional: React.FC = () => {
         <Card className="mt-6 border-blue-200 bg-blue-50/50 dark:bg-gray-800">
             <CardHeader className="p-3 pb-1">
                 <CardTitle className="text-base flex items-center text-blue-700 dark:text-blue-400">
-                    <LogIn className="h-4 w-4 mr-2" /> Login Opcional
+                    <LogIn className="h-4 w-4 mr-2" /> Autenticação
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-1">
                 <LoginForm />
             </CardContent>
             <CardContent className="p-3 pt-0 text-xs text-gray-500 dark:text-gray-400">
-                Faça login para salvar suas listas e comparações.
+                Faça login ou cadastre-se para salvar suas listas e comparações.
             </CardContent>
         </Card>
     );
