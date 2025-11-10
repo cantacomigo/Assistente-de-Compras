@@ -11,6 +11,7 @@ import { calcularComparacao } from '@/utils/list-generator';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useDebounce } from '@/hooks/use-debounce'; // Importando o novo hook
 
 interface ListaDeComprasProps {
     list: ItemCompra[];
@@ -26,11 +27,88 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     const { user } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [listName, setListName] = useState(`Lista de ${new Date().toLocaleDateString('pt-BR')}`);
+
+    // Debounce da lista para acionar o salvamento automático
+    const debouncedList = useDebounce(list, 2000); 
 
     // Limpa o resultado da comparação ao entrar na página de edição da lista
     useEffect(() => {
         setComparisonResult(null);
     }, [setComparisonResult]);
+
+    // Função de salvamento centralizada
+    const saveListToSupabase = useCallback(async (currentListId: string | null, listToSave: ItemCompra[]) => {
+        if (!user || listToSave.length === 0) {
+            // Não salva se não estiver logado ou se a lista estiver vazia
+            return;
+        }
+
+        setIsSaving(true);
+        
+        let error;
+        let successMessage;
+        let newId = currentListId;
+
+        if (currentListId) {
+            // UPDATE: Atualiza a lista existente
+            const { error: updateError } = await supabase
+                .from('shopping_lists')
+                .update({
+                    name: listName,
+                    num_pessoas: numPessoas,
+                    list_data: listToSave,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('id', currentListId);
+            
+            error = updateError;
+            successMessage = `Lista atualizada automaticamente.`;
+
+        } else {
+            // INSERT: Salva uma nova lista
+            const { data, error: insertError } = await supabase
+                .from('shopping_lists')
+                .insert({
+                    user_id: user.id,
+                    name: listName,
+                    num_pessoas: numPessoas,
+                    list_data: listToSave,
+                })
+                .select('id')
+                .single();
+            
+            error = insertError;
+            successMessage = `Nova lista salva automaticamente.`;
+
+            if (data) {
+                newId = data.id;
+                setCurrentListId(data.id);
+            }
+        }
+
+        setIsSaving(false);
+
+        if (error) {
+            console.error("Erro ao salvar/atualizar lista:", error);
+            showError("Erro ao salvar/atualizar lista automaticamente.");
+        } else {
+            // Usamos um toast discreto para autosave
+            if (currentListId || newId) {
+                // showSuccess(successMessage); // Comentado para evitar spam de toast no autosave
+            }
+        }
+    }, [user, listName, numPessoas, setCurrentListId]);
+
+
+    // Efeito para o Salvamento Automático (Autosave)
+    useEffect(() => {
+        // Só executa o autosave se o usuário estiver logado e a lista não estiver vazia
+        if (user && debouncedList.length > 0) {
+            saveListToSupabase(currentListId, debouncedList);
+        }
+    }, [debouncedList, user, currentListId, saveListToSupabase]);
+
 
     const updateItem = useCallback((index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max' | 'categoria', value: string | number | null) => {
         setList(prevList => {
@@ -89,7 +167,8 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         }, 500);
     };
 
-    const handleSaveList = async () => {
+    // Função para salvar manualmente (mantida para o botão)
+    const handleSaveListManual = async () => {
         if (!user) {
             showError("Você precisa estar logado para salvar listas.");
             return;
@@ -100,58 +179,9 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             return;
         }
 
-        setIsSaving(true);
-        
-        const listName = `Lista de ${new Date().toLocaleDateString('pt-BR')}`;
-        
-        let error;
-        let successMessage;
-
-        if (currentListId) {
-            // UPDATE: Atualiza a lista existente
-            const { error: updateError } = await supabase
-                .from('shopping_lists')
-                .update({
-                    name: listName, // Mantém o nome padrão ou poderia permitir edição
-                    num_pessoas: numPessoas,
-                    list_data: list,
-                    updated_at: new Date().toISOString(),
-                })
-                .eq('id', currentListId);
-            
-            error = updateError;
-            successMessage = `Lista atualizada com sucesso!`;
-
-        } else {
-            // INSERT: Salva uma nova lista
-            const { data, error: insertError } = await supabase
-                .from('shopping_lists')
-                .insert({
-                    user_id: user.id,
-                    name: listName,
-                    num_pessoas: numPessoas,
-                    list_data: list,
-                })
-                .select('id')
-                .single();
-            
-            error = insertError;
-            successMessage = `Lista "${listName}" salva com sucesso!`;
-
-            if (data) {
-                // Define o ID da lista recém-criada como a lista atual
-                setCurrentListId(data.id);
-            }
-        }
-
-        setIsSaving(false);
-
-        if (error) {
-            console.error("Erro ao salvar/atualizar lista:", error);
-            showError("Erro ao salvar/atualizar lista. Tente novamente.");
-        } else {
-            showSuccess(successMessage);
-        }
+        // Salvamento manual usa a função centralizada
+        await saveListToSupabase(currentListId, list);
+        showSuccess(currentListId ? "Lista atualizada manualmente com sucesso!" : "Lista salva manualmente com sucesso!");
     };
 
     // Agrupa a lista por categoria
@@ -190,7 +220,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                     
                     <div className="flex gap-2">
                         <Button 
-                            onClick={handleSaveList} 
+                            onClick={handleSaveListManual} 
                             variant="secondary"
                             disabled={isLoading || isSaving || !user}
                         >
@@ -217,10 +247,31 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                 </div>
 
                 {currentListId && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400 p-2 border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded">
-                        Você está editando uma lista salva. Clique em "{saveButtonText}" para salvar as alterações.
+                    <div className="text-sm text-gray-600 dark:text-gray-400 p-2 border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded flex justify-between items-center">
+                        <span>
+                            Você está editando uma lista salva. Clique em "{saveButtonText}" para salvar as alterações.
+                        </span>
+                        {isSaving && (
+                            <span className="flex items-center text-blue-600 dark:text-blue-400">
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Salvando...
+                            </span>
+                        )}
                     </div>
                 )}
+                
+                {!currentListId && user && (
+                    <div className="text-sm text-gray-600 dark:text-gray-400 p-2 border-l-4 border-green-500 bg-green-50 dark:bg-green-900/20 rounded flex justify-between items-center">
+                        <span>
+                            Esta é uma nova lista. Ela será salva automaticamente após 2 segundos de inatividade.
+                        </span>
+                        {isSaving && (
+                            <span className="flex items-center text-green-600 dark:text-green-400">
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Salvando...
+                            </span>
+                        )}
+                    </div>
+                )}
+
 
                 <div className="rounded-lg border shadow-md">
                     <Table className="min-w-full">
