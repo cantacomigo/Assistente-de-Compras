@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import ListaDeCompras from "./pages/ListaDeCompras";
 import Comparacao from "./pages/Comparacao";
 import { useShoppingList } from "./hooks/use-shopping-list";
+import { SessionContextProvider } from "./contexts/SessionContext";
 
 const queryClient = new QueryClient();
 
@@ -50,7 +51,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AppContent />
+      <SessionContextProvider>
+        <AppContent />
+      </SessionContextProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

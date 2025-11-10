@@ -2,27 +2,86 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, LogIn } from 'lucide-react';
+import { Mail, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/integrations/supabase/client';
+import { showSuccess, showError } from '@/utils/toast';
+import { useNavigate } from 'react-router-dom';
 
 const LoginOpcional: React.FC = () => {
+    const { user, isLoading } = useSession();
+    const navigate = useNavigate();
     const [email, setEmail] = React.useState('');
-    const [isLoggedIn, setIsLoggedIn] = React.useState(false); // Simulação
+    const [isSigningIn, setIsSigningIn] = React.useState(false);
 
-    const handleLogin = () => {
-        if (email) {
-            // Aqui seria a lógica real de login/cadastro com Supabase
-            console.log(`Tentativa de login com: ${email}`);
-            setIsLoggedIn(true);
-            // showSuccess(`Bem-vindo(a), ${email}!`);
+    const handleMagicLinkLogin = async () => {
+        if (!email) return;
+        setIsSigningIn(true);
+        
+        const { error } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: {
+                emailRedirectTo: window.location.origin,
+            },
+        });
+
+        setIsSigningIn(false);
+
+        if (error) {
+            showError(`Erro ao enviar link: ${error.message}`);
+        } else {
+            showSuccess("Link de acesso enviado! Verifique seu email para entrar.");
         }
     };
 
-    if (isLoggedIn) {
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            showError("Erro ao sair.");
+        } else {
+            showSuccess("Você saiu com sucesso.");
+        }
+    };
+
+    if (isLoading) {
         return (
-            <div className="text-sm text-green-600 flex items-center">
-                <LogIn className="h-4 w-4 mr-1" /> Logado como: {email} (Funcionalidade de salvar listas ativada)
-            </div>
+            <Card className="mt-6 border-gray-200 bg-gray-50/50 dark:bg-gray-800">
+                <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-base flex items-center text-gray-500 dark:text-gray-400">
+                        <UserIcon className="h-4 w-4 mr-2" /> Status de Login
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-1 text-sm text-gray-500">
+                    Carregando sessão...
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (user) {
+        const userEmail = user.email || 'Usuário';
+        return (
+            <Card className="mt-6 border-green-200 bg-green-50/50 dark:bg-green-900/20">
+                <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-base flex items-center text-green-700 dark:text-green-400">
+                        <LogIn className="h-4 w-4 mr-2" /> Logado
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-between p-3 pt-1">
+                    <div className="text-sm text-green-800 dark:text-green-300 truncate">
+                        {userEmail} (Listas salvas)
+                    </div>
+                    <Button 
+                        onClick={handleLogout} 
+                        variant="destructive"
+                        size="sm"
+                        className="h-8"
+                    >
+                        <LogOut className="h-4 w-4 mr-1" /> Sair
+                    </Button>
+                </CardContent>
+            </Card>
         );
     }
 
@@ -30,7 +89,7 @@ const LoginOpcional: React.FC = () => {
         <Card className="mt-6 border-blue-200 bg-blue-50/50 dark:bg-gray-800">
             <CardHeader className="p-3 pb-1">
                 <CardTitle className="text-base flex items-center text-blue-700 dark:text-blue-400">
-                    <Mail className="h-4 w-4 mr-2" /> Login Opcional
+                    <Mail className="h-4 w-4 mr-2" /> Login Opcional (Magic Link)
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-2 p-3 pt-1">
@@ -46,12 +105,15 @@ const LoginOpcional: React.FC = () => {
                     />
                 </div>
                 <Button 
-                    onClick={handleLogin} 
-                    disabled={!email}
+                    onClick={handleMagicLinkLogin} 
+                    disabled={!email || isSigningIn}
                     className="bg-blue-500 hover:bg-blue-600 text-white h-9"
                 >
-                    Entrar
+                    {isSigningIn ? 'Enviando...' : 'Entrar / Cadastrar'}
                 </Button>
+            </CardContent>
+            <CardContent className="p-3 pt-0 text-xs text-gray-500 dark:text-gray-400">
+                Usamos Magic Link: insira seu email e enviaremos um link de acesso instantâneo.
             </CardContent>
         </Card>
     );
