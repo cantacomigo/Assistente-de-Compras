@@ -1,39 +1,15 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, LogIn, LogOut, User as UserIcon } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { LogIn, LogOut, User as UserIcon, UserPlus } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { useNavigate } from 'react-router-dom';
+import LoginForm from './LoginForm';
 
 const LoginOpcional: React.FC = () => {
     const { user, isLoading } = useSession();
-    const navigate = useNavigate();
-    const [email, setEmail] = React.useState('');
-    const [isSigningIn, setIsSigningIn] = React.useState(false);
-
-    const handleMagicLinkLogin = async () => {
-        if (!email) return;
-        setIsSigningIn(true);
-        
-        const { error } = await supabase.auth.signInWithOtp({
-            email: email,
-            options: {
-                emailRedirectTo: window.location.origin,
-            },
-        });
-
-        setIsSigningIn(false);
-
-        if (error) {
-            showError(`Erro ao enviar link: ${error.message}`);
-        } else {
-            showSuccess("Link de acesso enviado! Verifique seu email para entrar.");
-        }
-    };
+    const [isSignUp, setIsSignUp] = React.useState(false);
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
@@ -89,31 +65,18 @@ const LoginOpcional: React.FC = () => {
         <Card className="mt-6 border-blue-200 bg-blue-50/50 dark:bg-gray-800">
             <CardHeader className="p-3 pb-1">
                 <CardTitle className="text-base flex items-center text-blue-700 dark:text-blue-400">
-                    <Mail className="h-4 w-4 mr-2" /> Login Opcional (Magic Link)
+                    {isSignUp ? <UserPlus className="h-4 w-4 mr-2" /> : <LogIn className="h-4 w-4 mr-2" />}
+                    {isSignUp ? 'Cadastro' : 'Login Opcional'}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col sm:flex-row gap-2 p-3 pt-1">
-                <div className="flex-grow">
-                    <Label htmlFor="email" className="sr-only">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="Seu email para salvar listas"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="h-9"
-                    />
-                </div>
-                <Button 
-                    onClick={handleMagicLinkLogin} 
-                    disabled={!email || isSigningIn}
-                    className="bg-blue-500 hover:bg-blue-600 text-white h-9"
-                >
-                    {isSigningIn ? 'Enviando...' : 'Entrar / Cadastrar'}
-                </Button>
+            <CardContent className="p-3 pt-1">
+                <LoginForm isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
             </CardContent>
             <CardContent className="p-3 pt-0 text-xs text-gray-500 dark:text-gray-400">
-                Usamos Magic Link: insira seu email e enviaremos um link de acesso instantâneo.
+                {isSignUp 
+                    ? 'Após o cadastro, verifique seu email para confirmar a conta.'
+                    : 'Faça login para salvar suas listas e comparações.'
+                }
             </CardContent>
         </Card>
     );
