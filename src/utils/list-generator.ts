@@ -6,7 +6,6 @@ import { ItemCompra, ResultadoComparacao } from "@/types/list";
  * @returns Lista de ItemCompra.
  */
 export function gerarListaInicial(numPessoas: number): ItemCompra[] {
-  // Retorna uma lista vazia, pois a geração sugerida foi removida.
   return [];
 }
 
