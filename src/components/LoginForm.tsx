@@ -39,7 +39,12 @@ const LoginForm: React.FC = () => {
         setIsLoading(false);
 
         if (signInError) {
-            showError(`Erro de login: ${signInError.message}`);
+            // Mensagem de erro mais amigável para credenciais inválidas
+            if (signInError.message.includes('Invalid login credentials')) {
+                showError("Credenciais inválidas. Verifique seu email e senha.");
+            } else {
+                showError(`Erro de login: ${signInError.message}`);
+            }
         } else {
             showSuccess("Login realizado com sucesso!");
         }
