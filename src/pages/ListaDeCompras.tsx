@@ -38,7 +38,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         }
     }, [location.state, setList]);
 
-    const updateItem = useCallback((index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max', value: string | number | null) => {
+    const updateItem = useCallback((index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max' | 'categoria', value: string | number | null) => {
         setList(prevList => {
             const newList = [...prevList];
             const item = newList[index];
@@ -144,9 +144,6 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
     const categories = Object.keys(groupedList).sort();
 
-    // Removemos o bloco que impedia a renderização de uma lista vazia,
-    // pois agora o usuário pode começar com uma lista vazia.
-
     return (
         <Layout>
             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
@@ -195,6 +192,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                         <TableHeader className="bg-gray-100 dark:bg-gray-800 sticky top-0">
                             <TableRow>
                                 <TableHead className="w-1/4 min-w-[150px]">Item</TableHead>
+                                <TableHead className="w-[150px] min-w-[150px]">Categoria</TableHead>
                                 <TableHead className="w-[150px] text-center">Qtd (Unidade)</TableHead>
                                 <TableHead className="w-[100px] text-right text-blue-600">Preço Proença (R$)</TableHead>
                                 <TableHead className="w-[100px] text-right text-blue-600">Preço Iquegami (R$)</TableHead>

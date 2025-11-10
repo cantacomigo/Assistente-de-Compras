@@ -4,11 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CATEGORIES } from '@/utils/categories';
 
 interface ListaItemRowProps {
     item: ItemCompra;
     index: number;
-    updateItem: (index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max', value: string | number | null) => void;
+    updateItem: (index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max' | 'categoria', value: string | number | null) => void;
     removeItem: (index: number) => void;
 }
 
@@ -93,6 +95,25 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
                 />
             </td>
             
+            {/* Categoria (Select) */}
+            <td className="p-2 w-[150px]">
+                <Select 
+                    value={item.categoria} 
+                    onValueChange={(value) => updateItem(index, 'categoria', value)}
+                >
+                    <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {CATEGORIES.map(category => (
+                            <SelectItem key={category} value={category}>
+                                {category}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </td>
+
             {/* Quantidade e Unidade (Número Editável) */}
             <td className="p-2 w-[150px]">
                 <div className="flex items-center space-x-1">
