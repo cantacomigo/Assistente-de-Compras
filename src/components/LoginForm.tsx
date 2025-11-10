@@ -9,10 +9,10 @@ import { Mail, Lock, LogIn, Loader2, UserPlus, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 
-// Esquema de validação para email e senha (senha é opcional para Magic Link)
+// Esquema de validação base
 const formSchema = z.object({
     email: z.string().email({ message: "Email inválido." }),
-    password: z.string().optional(), // Senha é opcional
+    password: z.string().optional(), // Mantemos opcional no esquema base, mas forçamos validação condicionalmente
 });
 
 type LoginFormValues = z.infer<typeof formSchema>;
@@ -32,6 +32,15 @@ const LoginForm: React.FC = () => {
     });
 
     const onSubmit = async (values: LoginFormValues) => {
+        // Validação condicional da senha
+        if (!useMagicLink && (!values.password || values.password.length < 6)) {
+            form.setError('password', {
+                type: 'manual',
+                message: 'A senha deve ter pelo menos 6 caracteres.',
+            });
+            return;
+        }
+
         setIsLoading(true);
         
         let error;
@@ -53,7 +62,7 @@ const LoginForm: React.FC = () => {
             // Cadastro (Sign Up)
             const { error: signUpError } = await supabase.auth.signUp({
                 email: values.email,
-                password: values.password!, // Senha é obrigatória no modo Sign Up
+                password: values.password!,
             });
             error = signUpError;
             successMessage = "Cadastro realizado! Verifique seu email para confirmar a conta.";
@@ -61,7 +70,7 @@ const LoginForm: React.FC = () => {
             // Login (Sign In with Password)
             const { error: signInError } = await supabase.auth.signInWithPassword({
                 email: values.email,
-                password: values.password!, // Senha é obrigatória no modo Sign In
+                password: values.password!,
             });
             error = signInError;
             successMessage = "Login realizado com sucesso!";
@@ -93,12 +102,6 @@ const LoginForm: React.FC = () => {
             setIsSignUp(mode === 'signup');
         }
     };
-
-    const currentModeText = useMagicLink 
-        ? 'Magic Link' 
-        : isSignUp 
-            ? 'Cadastro' 
-            : 'Login';
 
     return (
         <Form {...form}>
