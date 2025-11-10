@@ -15,6 +15,7 @@ interface ListaItemRowProps {
 const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, removeItem }) => {
     
     const handlePriceChange = (supermercado: 'proenca' | 'iquegami' | 'max', value: string) => {
+        // Substitui vírgula por ponto para que parseFloat funcione corretamente
         const cleanedValue = value.replace(',', '.').trim();
         
         if (cleanedValue === '') {
@@ -34,10 +35,13 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
         }
     };
 
-    const formatPrice = (price: number | null): string => {
+    // Esta função agora apenas retorna o valor como string, usando vírgula para exibição
+    // mas sem forçar a formatação completa, permitindo que o usuário digite livremente.
+    const formatPriceForInput = (price: number | null): string => {
         if (price === null || isNaN(price)) return '';
-        // Formata para PT-BR com vírgula
-        return price.toFixed(2).replace('.', ',');
+        // Retorna o valor com vírgula para exibição, mas sem forçar o toFixed(2)
+        // O toFixed(2) é aplicado apenas no momento de salvar o estado (handlePriceChange)
+        return String(price).replace('.', ',');
     };
 
     const isPriceValid = (price: number | null) => price !== null && price >= 0;
@@ -81,7 +85,7 @@ const ListaItemRow: React.FC<ListaItemRowProps> = ({ item, index, updateItem, re
                     <td key={key} className="p-2 w-[100px]">
                         <Input
                             placeholder="0,00"
-                            value={formatPrice(price)}
+                            value={formatPriceForInput(price)}
                             onChange={(e) => handlePriceChange(key, e.target.value)}
                             className={cn(
                                 "w-full h-8 p-1 text-right font-mono",
