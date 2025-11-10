@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, SetStateAction, Dispatch } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, Trash2, ArrowRight } from 'lucide-react';
@@ -19,8 +20,14 @@ interface SavedComparison {
     };
 }
 
-const ComparacoesSalvas: React.FC = () => {
+interface ComparacoesSalvasProps {
+    setList: Dispatch<SetStateAction<ItemCompra[]>>;
+    setComparisonResult: (result: ResultadoComparacao | null) => void;
+}
+
+const ComparacoesSalvas: React.FC<ComparacoesSalvasProps> = ({ setList, setComparisonResult }) => {
     const { user, isLoading: isSessionLoading } = useSession();
+    const navigate = useNavigate();
     const [comparisons, setComparisons] = useState<SavedComparison[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -50,6 +57,19 @@ const ComparacoesSalvas: React.FC = () => {
             setComparisons([]);
         }
     }, [user]);
+
+    const handleLoadComparison = (comparison: SavedComparison) => {
+        // 1. Carrega a lista de itens no estado global
+        setList(comparison.comparison_data.list);
+        
+        // 2. Carrega o resultado da comparação no estado global
+        setComparisonResult(comparison.comparison_data.result);
+        
+        showSuccess(`Comparação de ${new Date(comparison.created_at).toLocaleDateString('pt-BR')} carregada.`);
+        
+        // 3. Navega para a página de comparação
+        navigate('/comparacao');
+    };
 
     const handleDeleteComparison = async (comparisonId: string) => {
         if (!window.confirm(`Tem certeza que deseja deletar esta comparação?`)) {
@@ -108,7 +128,13 @@ const ComparacoesSalvas: React.FC = () => {
                                     </p>
                                 </div>
                                 <div className="flex space-x-2">
-                                    {/* Por enquanto, apenas o botão de deletar. A visualização detalhada pode ser um passo futuro. */}
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => handleLoadComparison(comp)}
+                                    >
+                                        Visualizar <ArrowRight className="h-4 w-4 ml-1" />
+                                    </Button>
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 

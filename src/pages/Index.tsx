@@ -41,7 +41,10 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
                         setNumPessoas={setNumPessoas} 
                         setList={setList}
                     />
-                    <ComparacoesSalvas />
+                    <ComparacoesSalvas 
+                        setList={setList}
+                        setComparisonResult={setComparisonResult}
+                    />
                 </div>
             </div>
         </Layout>
