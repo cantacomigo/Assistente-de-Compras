@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, ListPlus } from 'lucide-react';
 import { gerarListaInicial } from '@/utils/list-generator';
 import LoginOpcional from '@/components/LoginOpcional';
-import { toast } from '@/utils/toast';
+import { showError } from '@/utils/toast';
 
 interface InicioProps {
     setNumPessoas: (num: number) => void;
@@ -24,7 +24,7 @@ const Inicio: React.FC<InicioProps> = ({ setNumPessoas }) => {
         const numPessoas = Math.max(1, Math.min(10, numPessoasInput));
         
         if (isNaN(numPessoas) || numPessoas < 1) {
-            toast.showError("Por favor, insira um número válido de pessoas (mínimo 1).");
+            showError("Por favor, insira um número válido de pessoas (mínimo 1).");
             return;
         }
 
