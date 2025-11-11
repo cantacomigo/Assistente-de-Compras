@@ -18,9 +18,10 @@ interface InicioProps {
     setList: Dispatch<SetStateAction<ItemCompra[]>>;
     setComparisonResult: (result: ResultadoComparacao | null) => void;
     setCurrentListId: (id: string | null) => void;
+    setListName: (name: string) => void; // Novo
 }
 
-const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonResult, setCurrentListId }) => {
+const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonResult, setCurrentListId, setListName }) => {
     const navigate = useNavigate();
     const { user } = useSession();
 
@@ -29,6 +30,7 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
         setList([]);
         setComparisonResult(null);
         setCurrentListId(null);
+        setListName(`Lista de ${new Date().toLocaleDateString('pt-BR')}`); // Define nome padrão
         navigate('/lista'); 
     };
 
@@ -68,6 +70,7 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
                                         setNumPessoas={setNumPessoas} 
                                         setList={setList}
                                         setCurrentListId={setCurrentListId}
+                                        setListName={setListName} // Novo
                                     />
                                     <ComparacoesSalvas 
                                         setList={setList}

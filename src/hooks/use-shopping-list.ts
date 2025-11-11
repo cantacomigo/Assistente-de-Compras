@@ -6,6 +6,7 @@ interface ShoppingListState {
     comparisonResult: ResultadoComparacao | null;
     numPessoas: number;
     currentListId: string | null; // Novo campo para rastrear o ID da lista salva
+    listName: string; // Novo campo para o nome da lista
 }
 
 const initialState: ShoppingListState = {
@@ -13,6 +14,7 @@ const initialState: ShoppingListState = {
     comparisonResult: null,
     numPessoas: 1,
     currentListId: null,
+    listName: `Lista de ${new Date().toLocaleDateString('pt-BR')}`,
 };
 
 export function useShoppingList() {
@@ -31,6 +33,7 @@ export function useShoppingList() {
     const setComparisonResult = useCallback((result: ResultadoComparacao | null) => setState(prev => ({ ...prev, comparisonResult: result })), []);
     const setNumPessoas = useCallback((num: number) => setState(prev => ({ ...prev, numPessoas: num })), []);
     const setCurrentListId = useCallback((id: string | null) => setState(prev => ({ ...prev, currentListId: id })), []);
+    const setListName = useCallback((name: string) => setState(prev => ({ ...prev, listName: name })), []);
     const resetState = useCallback(() => setState(initialState), []);
 
     return {
@@ -38,7 +41,8 @@ export function useShoppingList() {
         setList,
         setComparisonResult,
         setNumPessoas,
-        setCurrentListId, // Exportando a nova função
+        setCurrentListId, 
+        setListName, // Exportando a nova função
         resetState,
     };
 }

@@ -27,6 +27,7 @@ const AppContent = () => {
               setList={shoppingListState.setList}
               setComparisonResult={shoppingListState.setComparisonResult}
               setCurrentListId={shoppingListState.setCurrentListId}
+              setListName={shoppingListState.setListName} // Novo
             />
           } 
         />
@@ -40,6 +41,8 @@ const AppContent = () => {
               numPessoas={shoppingListState.numPessoas}
               currentListId={shoppingListState.currentListId}
               setCurrentListId={shoppingListState.setCurrentListId}
+              listName={shoppingListState.listName} // Novo
+              setListName={shoppingListState.setListName} // Novo
             />
           } 
         />

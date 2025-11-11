@@ -19,10 +19,11 @@ interface SavedList {
 interface ListasSalvasProps {
     setNumPessoas: (num: number) => void;
     setList: Dispatch<SetStateAction<ItemCompra[]>>;
-    setCurrentListId: (id: string | null) => void; // Novo
+    setCurrentListId: (id: string | null) => void;
+    setListName: (name: string) => void; // Novo
 }
 
-const ListasSalvas: React.FC<ListasSalvasProps> = ({ setNumPessoas, setList, setCurrentListId }) => {
+const ListasSalvas: React.FC<ListasSalvasProps> = ({ setNumPessoas, setList, setCurrentListId, setListName }) => {
     const { user, isLoading: isSessionLoading } = useSession();
     const navigate = useNavigate();
     const [lists, setLists] = useState<SavedList[]>([]);
@@ -59,6 +60,7 @@ const ListasSalvas: React.FC<ListasSalvasProps> = ({ setNumPessoas, setList, set
         setNumPessoas(list.num_pessoas);
         setList(list.list_data); // Carrega a lista no estado global
         setCurrentListId(list.id); // Define o ID da lista atual
+        setListName(list.name); // Define o nome da lista
         showSuccess(`Lista "${list.name}" carregada com sucesso.`);
         navigate('/lista'); // Navega para a página de lista
     };

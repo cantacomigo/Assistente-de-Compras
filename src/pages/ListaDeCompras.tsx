@@ -5,32 +5,37 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
 import ListaItemRow from '@/components/ListaItemRow';
-import { Plus, Calculator, Save, Loader2, Tag, Edit } from 'lucide-react';
+import { Plus, Calculator, Save, Loader2, Tag, Edit, List as ListIcon } from 'lucide-react';
 import { showError, showSuccess } from '@/utils/toast';
 import { calcularComparacao } from '@/utils/list-generator';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useDebounce } from '@/hooks/use-debounce';
+import { Input } from '@/components/ui/input';
 
 interface ListaDeComprasProps {
     list: ItemCompra[];
     setList: Dispatch<SetStateAction<ItemCompra[]>>; 
     setComparisonResult: (result: ResultadoComparacao | null) => void;
     numPessoas: number;
-    currentListId: string | null; // Novo
-    setCurrentListId: (id: string | null) => void; // Novo
+    currentListId: string | null;
+    setCurrentListId: (id: string | null) => void;
+    listName: string; // Novo
+    setListName: (name: string) => void; // Novo
 }
 
-const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setComparisonResult, numPessoas, currentListId, setCurrentListId }) => {
+const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setComparisonResult, numPessoas, currentListId, setCurrentListId, listName, setListName }) => {
     const navigate = useNavigate();
     const { user } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [listName, setListName] = useState(`Lista de ${new Date().toLocaleDateString('pt-BR')}`);
+    // listName agora vem das props e é gerenciado globalmente
 
     // Debounce da lista para acionar o salvamento automático
     const debouncedList = useDebounce(list, 2000); 
+    // Debounce do nome da lista para acionar o salvamento automático
+    const debouncedListName = useDebounce(listName, 2000);
 
     // Limpa o resultado da comparação ao entrar na página de edição da lista
     useEffect(() => {
@@ -38,9 +43,14 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     }, [setComparisonResult]);
 
     // Função de salvamento centralizada
-    const saveListToSupabase = useCallback(async (currentListId: string | null, listToSave: ItemCompra[]) => {
+    const saveListToSupabase = useCallback(async (currentListId: string | null, listToSave: ItemCompra[], nameToSave: string) => {
         if (!user || listToSave.length === 0) {
             // Não salva se não estiver logado ou se a lista estiver vazia
+            return;
+        }
+        
+        // Evita salvar se o nome estiver vazio
+        if (nameToSave.trim() === "") {
             return;
         }
 
@@ -54,7 +64,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             const { error: updateError } = await supabase
                 .from('shopping_lists')
                 .update({
-                    name: listName,
+                    name: nameToSave,
                     num_pessoas: numPessoas,
                     list_data: listToSave,
                     updated_at: new Date().toISOString(),
@@ -69,7 +79,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                 .from('shopping_lists')
                 .insert({
                     user_id: user.id,
-                    name: listName,
+                    name: nameToSave,
                     num_pessoas: numPessoas,
                     list_data: listToSave,
                 })
@@ -92,17 +102,17 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         } else {
             // Sucesso no autosave
         }
-    }, [user, listName, numPessoas, setCurrentListId]);
+    }, [user, numPessoas, setCurrentListId]);
 
 
     // Efeito para o Salvamento Automático (Autosave)
     useEffect(() => {
         // Só executa o autosave se o usuário estiver logado e a lista não estiver vazia
         if (user && debouncedList.length > 0) {
-            // Passamos o currentListId e a lista debounced para a função de salvamento
-            saveListToSupabase(currentListId, debouncedList);
+            // O autosave é acionado tanto pela mudança na lista quanto no nome
+            saveListToSupabase(currentListId, debouncedList, debouncedListName);
         }
-    }, [debouncedList, user, currentListId, saveListToSupabase]);
+    }, [debouncedList, debouncedListName, user, currentListId, saveListToSupabase]);
 
 
     const updateItem = useCallback((index: number, field: keyof ItemCompra | 'nome' | 'quantidade' | 'unidade' | 'proenca' | 'iquegami' | 'max' | 'categoria', value: string | number | null) => {
@@ -173,9 +183,14 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
             showError("A lista está vazia. Adicione itens antes de salvar.");
             return;
         }
+        
+        if (listName.trim() === "") {
+            showError("O nome da lista não pode estar vazio.");
+            return;
+        }
 
         // Salvamento manual usa a função centralizada
-        await saveListToSupabase(currentListId, list);
+        await saveListToSupabase(currentListId, list, listName);
         showSuccess(currentListId ? "Lista atualizada manualmente com sucesso!" : "Lista salva manualmente com sucesso!");
     };
 
@@ -200,9 +215,16 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
     return (
         <Layout>
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-                Minha Lista de Compras
-            </h2>
+            <div className="flex items-center mb-6 space-x-4">
+                <ListIcon className="h-8 w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <Input
+                    value={listName}
+                    onChange={(e) => setListName(e.target.value)}
+                    placeholder="Nome da Lista"
+                    className="text-2xl font-bold border-none p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent"
+                />
+            </div>
+            
             <div className="space-y-6">
                 <div className="flex flex-wrap gap-2 justify-between items-center">
                     <Button 
@@ -241,26 +263,17 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                     </div>
                 </div>
 
-                {currentListId && (
+                {/* Mensagens de status */}
+                {(currentListId || user) && (
                     <div className="text-sm text-gray-600 dark:text-gray-400 p-2 border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded flex justify-between items-center">
                         <span>
-                            Você está editando uma lista salva. Clique em "{saveButtonText}" para salvar as alterações.
+                            {currentListId 
+                                ? `Você está editando a lista "${listName}". Clique em "${saveButtonText}" para salvar as alterações.`
+                                : "Esta é uma nova lista. Ela será salva automaticamente após 2 segundos de inatividade."
+                            }
                         </span>
                         {isSaving && (
                             <span className="flex items-center text-blue-600 dark:text-blue-400">
-                                <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Salvando...
-                            </span>
-                        )}
-                    </div>
-                )}
-                
-                {!currentListId && user && (
-                    <div className="text-sm text-gray-600 dark:text-gray-400 p-2 border-l-4 border-green-500 bg-green-50 dark:bg-green-900/20 rounded flex justify-between items-center">
-                        <span>
-                            Esta é uma nova lista. Ela será salva automaticamente após 2 segundos de inatividade.
-                        </span>
-                        {isSaving && (
-                            <span className="flex items-center text-green-600 dark:text-green-400">
                                 <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Salvando...
                             </span>
                         )}
@@ -285,13 +298,10 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                         {list.length === 0 ? (
                             <TableCaption className="py-4">Sua lista está vazia. Clique em "Adicionar Item" para começar!</TableCaption>
                         ) : (
-                            // Renderiza o corpo da tabela usando Accordion para agrupamento
                             <Accordion type="multiple" className="w-full" defaultValue={categories}>
                                 {categories.map((category) => (
                                     <AccordionItem key={category} value={category} className="border-t">
-                                        {/* O Trigger será a linha de cabeçalho do grupo */}
                                         <AccordionTrigger asChild>
-                                            {/* Usamos tr e td para simular a linha da tabela */}
                                             <TableRow className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                                                 <td colSpan={7} className="px-4 py-3 font-semibold text-lg text-left">
                                                     <div className="flex items-center">
@@ -302,9 +312,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                                             </TableRow>
                                         </AccordionTrigger>
                                         
-                                        {/* O Conteúdo do Accordion conterá as linhas de item */}
                                         <AccordionContent className="p-0">
-                                            {/* Renderiza as linhas de item diretamente, sem TableBody extra */}
                                             {groupedList[category].map((item) => {
                                                 const originalIndex = list.findIndex(i => i.id === item.id);
                                                 return (
