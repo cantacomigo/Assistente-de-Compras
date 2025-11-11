@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ListaDeCompras from "./pages/ListaDeCompras";
 import Comparacao from "./pages/Comparacao";
+import Dashboard from "./pages/Dashboard"; // Importando Dashboard
 import { useShoppingList } from "./hooks/use-shopping-list";
 import { SessionContextProvider } from "./contexts/SessionContext";
 import { ThemeProvider } from "./components/ThemeProvider";
@@ -27,7 +28,7 @@ const AppContent = () => {
               setList={shoppingListState.setList}
               setComparisonResult={shoppingListState.setComparisonResult}
               setCurrentListId={shoppingListState.setCurrentListId}
-              setListName={shoppingListState.setListName} // Novo
+              setListName={shoppingListState.setListName}
             />
           } 
         />
@@ -41,8 +42,8 @@ const AppContent = () => {
               numPessoas={shoppingListState.numPessoas}
               currentListId={shoppingListState.currentListId}
               setCurrentListId={shoppingListState.setCurrentListId}
-              listName={shoppingListState.listName} // Novo
-              setListName={shoppingListState.setListName} // Novo
+              listName={shoppingListState.listName}
+              setListName={shoppingListState.setListName}
             />
           } 
         />
@@ -52,6 +53,18 @@ const AppContent = () => {
             <Comparacao 
               list={shoppingListState.list} 
               comparisonResult={shoppingListState.comparisonResult}
+            />
+          } 
+        />
+        <Route 
+          path="/dashboard" 
+          element={
+            <Dashboard 
+              setNumPessoas={shoppingListState.setNumPessoas} 
+              setList={shoppingListState.setList}
+              setComparisonResult={shoppingListState.setComparisonResult}
+              setCurrentListId={shoppingListState.setCurrentListId}
+              setListName={shoppingListState.setListName}
             />
           } 
         />

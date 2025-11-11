@@ -1,12 +1,8 @@
 import React, { SetStateAction, Dispatch } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import ListasSalvas from '@/components/ListasSalvas';
-import ComparacoesSalvas from '@/components/ComparacoesSalvas';
 import HeroSection from '@/components/HeroSection';
-import WelcomeMessage from '@/components/WelcomeMessage';
 import { ItemCompra, ResultadoComparacao } from '@/types/list';
-import { useSession } from '@/contexts/SessionContext';
 import FeaturesSection from '@/components/FeaturesSection';
 import HowItWorksSection from '@/components/HowItWorksSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
@@ -22,7 +18,6 @@ interface InicioProps {
 
 const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonResult, setCurrentListId, setListName }) => {
     const navigate = useNavigate();
-    const { user } = useSession();
 
     const handleCreateManualList = () => {
         setNumPessoas(1); 
@@ -46,49 +41,10 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
                 {/* 3. Seção Como Funciona */}
                 <HowItWorksSection />
 
-                {/* 4. Painel do Usuário (Conteúdo dinâmico) */}
-                <section>
-                    <div className="text-center mb-10">
-                        <h2 className="text-3xl font-bold tracking-tight">Seu Painel Pessoal</h2>
-                        <p className="mt-2 text-lg text-muted-foreground">
-                            {user ? "Acesse suas listas e comparações salvas." : "Faça login no menu superior para salvar seu progresso e acessar suas listas de qualquer lugar."}
-                        </p>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                        {/* Coluna 1: Boas-vindas */}
-                        <div className="lg:col-span-1 space-y-6">
-                            <WelcomeMessage />
-                        </div>
-
-                        {/* Coluna 2 & 3: Listas e Comparações Salvas */}
-                        <div className="lg:col-span-2 space-y-8">
-                            {user ? (
-                                <>
-                                    <ListasSalvas 
-                                        setNumPessoas={setNumPessoas} 
-                                        setList={setList}
-                                        setCurrentListId={setCurrentListId}
-                                        setListName={setListName}
-                                    />
-                                    <ComparacoesSalvas 
-                                        setList={setList}
-                                        setComparisonResult={setComparisonResult}
-                                    />
-                                </>
-                            ) : (
-                                <div className="p-10 text-center text-gray-500 dark:text-gray-400 border-2 border-dashed rounded-lg h-full flex flex-col justify-center items-center">
-                                    <h3 className="text-xl font-semibold mb-2">Área do Usuário</h3>
-                                    <p>Faça login para visualizar e gerenciar suas listas e comparações salvas aqui.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </section>
-
-                {/* 5. Seção de Depoimentos */}
+                {/* 4. Seção de Depoimentos */}
                 <TestimonialsSection />
 
-                {/* 6. Seção de Chamada para Ação Final */}
+                {/* 5. Seção de Chamada para Ação Final */}
                 <CallToActionSection handleCreateManualList={handleCreateManualList} />
 
             </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Home, List, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Home, List, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from './ThemeToggle';
 import UserAuthMenu from './UserAuthMenu';
@@ -8,7 +8,7 @@ import UserAuthMenu from './UserAuthMenu';
 const navItems = [
     { name: 'Início', href: '/', icon: Home },
     { name: 'Lista', href: '/lista', icon: List },
-    { name: 'Comparação', href: '/comparacao', icon: TrendingUp },
+    { name: 'Painel', href: '/dashboard', icon: LayoutDashboard }, // Novo link para Dashboard
 ];
 
 const Header: React.FC = () => {
