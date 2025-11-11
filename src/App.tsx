@@ -9,6 +9,7 @@ import ListaDeCompras from "./pages/ListaDeCompras";
 import Comparacao from "./pages/Comparacao";
 import { useShoppingList } from "./hooks/use-shopping-list";
 import { SessionContextProvider } from "./contexts/SessionContext";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,7 @@ const AppContent = () => {
               setNumPessoas={shoppingListState.setNumPessoas} 
               setList={shoppingListState.setList}
               setComparisonResult={shoppingListState.setComparisonResult}
-              setCurrentListId={shoppingListState.setCurrentListId} // Novo
+              setCurrentListId={shoppingListState.setCurrentListId}
             />
           } 
         />
@@ -37,8 +38,8 @@ const AppContent = () => {
               setList={shoppingListState.setList} 
               setComparisonResult={shoppingListState.setComparisonResult}
               numPessoas={shoppingListState.numPessoas}
-              currentListId={shoppingListState.currentListId} // Novo
-              setCurrentListId={shoppingListState.setCurrentListId} // Novo
+              currentListId={shoppingListState.currentListId}
+              setCurrentListId={shoppingListState.setCurrentListId}
             />
           } 
         />
@@ -51,7 +52,6 @@ const AppContent = () => {
             />
           } 
         />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
@@ -61,11 +61,18 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <SessionContextProvider>
-        <AppContent />
-      </SessionContextProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <Toaster />
+        <Sonner />
+        <SessionContextProvider>
+          <AppContent />
+        </SessionContextProvider>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

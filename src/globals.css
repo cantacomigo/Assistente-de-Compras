@@ -33,32 +33,16 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 224 71% 4%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 224 71% 8%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 210 40% 98%;
@@ -79,14 +63,6 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -100,43 +76,44 @@
   }
 }
 
+/* Efeitos Premium */
+@layer components {
+  /* Efeito de hover para os cards */
+  .card {
+    @apply transition-all duration-300 ease-out;
+  }
+  .card:hover {
+    @apply transform -translate-y-1 shadow-2xl shadow-blue-500/10 dark:shadow-blue-400/10;
+  }
+}
+
+
 /* Estilos de Impressão (PDF) */
 @media print {
-  /* Esconde elementos não essenciais para o PDF */
-  header, footer, .print-hidden {
+  .print-hidden {
     display: none !important;
   }
-
-  /* Garante que o conteúdo principal ocupe a largura total */
   main {
     padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
     width: 100% !important;
+    padding-top: 0 !important;
   }
-
-  /* Remove o fundo para economizar tinta */
-  /* Simplificamos o seletor para evitar erros de parsing com barras (/) */
-  body, .bg-gray-50, .dark\\:bg-gray-900, .bg-green-50, .bg-gray-100, .dark\\:bg-gray-800 {
+  body, .dark .bg-gray-950 {
     background-color: white !important;
     color: black !important;
   }
-
-  /* Garante que as cores da tabela sejam visíveis */
   .dark .text-gray-200, .dark .text-gray-300, .dark .text-gray-400 {
     color: black !important;
   }
-
-  /* Garante que a tabela e cards sejam impressos corretamente */
   .shadow-xl, .border {
     box-shadow: none !important;
     border: 1px solid #ccc !important;
   }
-  
-  /* Força a cor de fundo da tabela para branco para melhor leitura */
   .bg-gray-100, .bg-blue-50 {
     background-color: #f0f0f0 !important;
     -webkit-print-color-adjust: exact;
-    print-color-adjust: exact; /* Substituído color-adjust */
+    print-color-adjust: exact;
   }
 }
