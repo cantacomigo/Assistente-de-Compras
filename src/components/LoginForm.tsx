@@ -95,6 +95,8 @@ const LoginForm: React.FC = () => {
         setIsLoading(false);
 
         if (error) {
+            console.error("Erro detalhado do Supabase:", error); // Adicionado para diagnóstico
+            
             // Tratamento de erros específicos do Supabase
             if (error.message.includes('Invalid login credentials')) {
                 showError("Credenciais inválidas. Verifique seu email e senha.");
