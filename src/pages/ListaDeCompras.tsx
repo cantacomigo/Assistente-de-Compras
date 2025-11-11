@@ -12,7 +12,6 @@ import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
-import ListaGrupoRow from '@/components/ListaGrupoRow'; // Importando o novo componente
 
 interface ListaDeComprasProps {
     list: ItemCompra[];
@@ -193,21 +192,8 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         showSuccess(currentListId ? "Lista atualizada manualmente com sucesso!" : "Lista salva manualmente com sucesso!");
     };
 
-    // Agrupa a lista por categoria
-    const groupedList = useMemo(() => {
-        const groups: Record<string, ItemCompra[]> = {};
-        list.forEach(item => {
-            // Garante que o item tenha uma categoria válida, usando o padrão se necessário
-            const category = item.categoria || "Outros (Diversos e Especiais)";
-            if (!groups[category]) {
-                groups[category] = [];
-            }
-            groups[category].push(item);
-        });
-        return groups;
-    }, [list]);
-
-    const categories = Object.keys(groupedList).sort();
+    // Agrupamento por categoria removido temporariamente para corrigir o DOM.
+    // A lista será renderizada em ordem de adição.
     
     const saveButtonText = currentListId ? 'Atualizar Lista' : 'Salvar Lista';
     const saveButtonIcon = currentListId ? Edit : Save;
@@ -298,14 +284,13 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                             <TableCaption className="py-4">Sua lista está vazia. Clique em "Adicionar Item" para começar!</TableCaption>
                         ) : (
                             <TableBody>
-                                {categories.map((category) => (
-                                    <ListaGrupoRow 
-                                        key={category}
-                                        category={category}
-                                        items={groupedList[category]}
-                                        updateItem={updateItem}
-                                        removeItem={removeItem}
-                                        list={list}
+                                {list.map((item, index) => (
+                                    <ListaItemRow 
+                                        key={item.id} 
+                                        item={item} 
+                                        index={index} 
+                                        updateItem={updateItem} 
+                                        removeItem={removeItem} 
                                     />
                                 ))}
                             </TableBody>
