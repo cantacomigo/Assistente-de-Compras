@@ -285,37 +285,42 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                         {list.length === 0 ? (
                             <TableCaption className="py-4">Sua lista está vazia. Clique em "Adicionar Item" para começar!</TableCaption>
                         ) : (
-                            <TableBody>
-                                <Accordion type="multiple" className="w-full" defaultValue={categories}>
-                                    {categories.map((category) => (
-                                        <AccordionItem key={category} value={category} className="border-t">
-                                            <AccordionTrigger className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-3 font-semibold text-lg">
-                                                <Tag className="h-5 w-5 mr-2 text-gray-500" />
-                                                {category} ({groupedList[category].length} itens)
-                                            </AccordionTrigger>
-                                            <AccordionContent className="p-0">
-                                                <Table className="w-full">
-                                                    <TableBody>
-                                                        {groupedList[category].map((item) => {
-                                                            // Encontra o índice original na lista não agrupada para garantir que o updateItem funcione
-                                                            const originalIndex = list.findIndex(i => i.id === item.id);
-                                                            return (
-                                                                <ListaItemRow 
-                                                                    key={item.id} 
-                                                                    item={item} 
-                                                                    index={originalIndex} 
-                                                                    updateItem={updateItem} 
-                                                                    removeItem={removeItem} 
-                                                                />
-                                                            );
-                                                        })}
-                                                    </TableBody>
-                                                </Table>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    ))}
-                                </Accordion>
-                            </TableBody>
+                            // Renderiza o corpo da tabela usando Accordion para agrupamento
+                            <Accordion type="multiple" className="w-full" defaultValue={categories}>
+                                {categories.map((category) => (
+                                    <AccordionItem key={category} value={category} className="border-t">
+                                        {/* O Trigger será a linha de cabeçalho do grupo */}
+                                        <AccordionTrigger asChild>
+                                            {/* Usamos tr e td para simular a linha da tabela */}
+                                            <TableRow className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                                                <td colSpan={7} className="px-4 py-3 font-semibold text-lg text-left">
+                                                    <div className="flex items-center">
+                                                        <Tag className="h-5 w-5 mr-2 text-gray-500" />
+                                                        {category} ({groupedList[category].length} itens)
+                                                    </div>
+                                                </td>
+                                            </TableRow>
+                                        </AccordionTrigger>
+                                        
+                                        {/* O Conteúdo do Accordion conterá as linhas de item */}
+                                        <AccordionContent className="p-0">
+                                            {/* Renderiza as linhas de item diretamente, sem TableBody extra */}
+                                            {groupedList[category].map((item) => {
+                                                const originalIndex = list.findIndex(i => i.id === item.id);
+                                                return (
+                                                    <ListaItemRow 
+                                                        key={item.id} 
+                                                        item={item} 
+                                                        index={originalIndex} 
+                                                        updateItem={updateItem} 
+                                                        removeItem={removeItem} 
+                                                    />
+                                                );
+                                            })}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
                         )}
                     </Table>
                 </div>
