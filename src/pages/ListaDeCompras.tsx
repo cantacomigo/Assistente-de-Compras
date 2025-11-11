@@ -30,7 +30,6 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     const { user } = useSession();
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    // listName agora vem das props e é gerenciado globalmente
 
     // Debounce da lista para acionar o salvamento automático
     const debouncedList = useDebounce(list, 2000); 
@@ -298,37 +297,45 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                         {list.length === 0 ? (
                             <TableCaption className="py-4">Sua lista está vazia. Clique em "Adicionar Item" para começar!</TableCaption>
                         ) : (
-                            <Accordion type="multiple" className="w-full" defaultValue={categories}>
+                            // Usamos TableBody para envolver os grupos de linhas
+                            <TableBody>
                                 {categories.map((category) => (
-                                    <AccordionItem key={category} value={category} className="border-t">
-                                        <AccordionTrigger asChild>
+                                    // Renderizamos o AccordionItem como um div, mas o conteúdo interno será tr/td
+                                    <Accordion type="single" collapsible key={category} className="w-full">
+                                        <AccordionItem value={category} className="border-t">
+                                            {/* Linha de cabeçalho do grupo (Trigger) */}
                                             <TableRow className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                                                <td colSpan={7} className="px-4 py-3 font-semibold text-lg text-left">
-                                                    <div className="flex items-center">
-                                                        <Tag className="h-5 w-5 mr-2 text-gray-500" />
-                                                        {category} ({groupedList[category].length} itens)
-                                                    </div>
+                                                <td colSpan={7} className="p-0">
+                                                    {/* O AccordionTrigger é o botão que preenche a célula */}
+                                                    <AccordionTrigger className="w-full px-4 py-3 font-semibold text-lg text-left hover:no-underline">
+                                                        <div className="flex items-center">
+                                                            <Tag className="h-5 w-5 mr-2 text-gray-500" />
+                                                            {category} ({groupedList[category].length} itens)
+                                                        </div>
+                                                    </AccordionTrigger>
                                                 </td>
                                             </TableRow>
-                                        </AccordionTrigger>
-                                        
-                                        <AccordionContent className="p-0">
-                                            {groupedList[category].map((item) => {
-                                                const originalIndex = list.findIndex(i => i.id === item.id);
-                                                return (
-                                                    <ListaItemRow 
-                                                        key={item.id} 
-                                                        item={item} 
-                                                        index={originalIndex} 
-                                                        updateItem={updateItem} 
-                                                        removeItem={removeItem} 
-                                                    />
-                                                );
-                                            })}
-                                        </AccordionContent>
-                                    </AccordionItem>
+                                            
+                                            {/* O Conteúdo do Accordion conterá as linhas de item */}
+                                            <AccordionContent className="p-0">
+                                                {/* Renderiza as linhas de item diretamente */}
+                                                {groupedList[category].map((item) => {
+                                                    const originalIndex = list.findIndex(i => i.id === item.id);
+                                                    return (
+                                                        <ListaItemRow 
+                                                            key={item.id} 
+                                                            item={item} 
+                                                            index={originalIndex} 
+                                                            updateItem={updateItem} 
+                                                            removeItem={removeItem} 
+                                                        />
+                                                    );
+                                                })}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </Accordion>
                                 ))}
-                            </Accordion>
+                            </TableBody>
                         )}
                     </Table>
                 </div>
