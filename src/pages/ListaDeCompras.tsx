@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, SetStateAction, Dispatch, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,7 +11,7 @@ import { calcularComparacao } from '@/utils/list-generator';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useDebounce } from '@/hooks/use-debounce'; // Importando o novo hook
+import { useDebounce } from '@/hooks/use-debounce';
 
 interface ListaDeComprasProps {
     list: ItemCompra[];
@@ -47,7 +47,6 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
         setIsSaving(true);
         
         let error;
-        let successMessage;
         let newId = currentListId;
 
         if (currentListId) {
@@ -63,7 +62,6 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                 .eq('id', currentListId);
             
             error = updateError;
-            successMessage = `Lista atualizada automaticamente.`;
 
         } else {
             // INSERT: Salva uma nova lista
@@ -79,7 +77,6 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                 .single();
             
             error = insertError;
-            successMessage = `Nova lista salva automaticamente.`;
 
             if (data) {
                 newId = data.id;
@@ -91,12 +88,9 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
 
         if (error) {
             console.error("Erro ao salvar/atualizar lista:", error);
-            showError("Erro ao salvar/atualizar lista automaticamente.");
+            // Não mostramos erro de toast no autosave para evitar interrupção
         } else {
-            // Usamos um toast discreto para autosave
-            if (currentListId || newId) {
-                // showSuccess(successMessage); // Comentado para evitar spam de toast no autosave
-            }
+            // Sucesso no autosave
         }
     }, [user, listName, numPessoas, setCurrentListId]);
 
@@ -105,6 +99,7 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
     useEffect(() => {
         // Só executa o autosave se o usuário estiver logado e a lista não estiver vazia
         if (user && debouncedList.length > 0) {
+            // Passamos o currentListId e a lista debounced para a função de salvamento
             saveListToSupabase(currentListId, debouncedList);
         }
     }, [debouncedList, user, currentListId, saveListToSupabase]);
@@ -286,41 +281,43 @@ const ListaDeCompras: React.FC<ListaDeComprasProps> = ({ list, setList, setCompa
                                 <TableHead className="w-10 text-center">Remover</TableHead>
                             </TableRow>
                         </TableHeader>
+                        
+                        {list.length === 0 ? (
+                            <TableCaption className="py-4">Sua lista está vazia. Clique em "Adicionar Item" para começar!</TableCaption>
+                        ) : (
+                            <TableBody>
+                                <Accordion type="multiple" className="w-full" defaultValue={categories}>
+                                    {categories.map((category) => (
+                                        <AccordionItem key={category} value={category} className="border-t">
+                                            <AccordionTrigger className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-3 font-semibold text-lg">
+                                                <Tag className="h-5 w-5 mr-2 text-gray-500" />
+                                                {category} ({groupedList[category].length} itens)
+                                            </AccordionTrigger>
+                                            <AccordionContent className="p-0">
+                                                <Table className="w-full">
+                                                    <TableBody>
+                                                        {groupedList[category].map((item) => {
+                                                            // Encontra o índice original na lista não agrupada para garantir que o updateItem funcione
+                                                            const originalIndex = list.findIndex(i => i.id === item.id);
+                                                            return (
+                                                                <ListaItemRow 
+                                                                    key={item.id} 
+                                                                    item={item} 
+                                                                    index={originalIndex} 
+                                                                    updateItem={updateItem} 
+                                                                    removeItem={removeItem} 
+                                                                />
+                                                            );
+                                                        })}
+                                                    </TableBody>
+                                                </Table>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    ))}
+                                </Accordion>
+                            </TableBody>
+                        )}
                     </Table>
-                    
-                    {list.length === 0 ? (
-                        <TableCaption className="py-4">Sua lista está vazia. Clique em "Adicionar Item" para começar!</TableCaption>
-                    ) : (
-                        <Accordion type="multiple" className="w-full" defaultValue={categories}>
-                            {categories.map((category) => (
-                                <AccordionItem key={category} value={category} className="border-t">
-                                    <AccordionTrigger className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 px-4 py-3 font-semibold text-lg">
-                                        <Tag className="h-5 w-5 mr-2 text-gray-500" />
-                                        {category} ({groupedList[category].length} itens)
-                                    </AccordionTrigger>
-                                    <AccordionContent className="p-0">
-                                        <Table className="w-full">
-                                            <TableBody>
-                                                {groupedList[category].map((item) => {
-                                                    // Encontra o índice original na lista não agrupada para garantir que o updateItem funcione
-                                                    const originalIndex = list.findIndex(i => i.id === item.id);
-                                                    return (
-                                                        <ListaItemRow 
-                                                            key={item.id} 
-                                                            item={item} 
-                                                            index={originalIndex} 
-                                                            updateItem={updateItem} 
-                                                            removeItem={removeItem} 
-                                                        />
-                                                    );
-                                                })}
-                                            </TableBody>
-                                        </Table>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            ))}
-                        </Accordion>
-                    )}
                 </div>
             </div>
         </Layout>
