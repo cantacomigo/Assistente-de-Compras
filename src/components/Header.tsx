@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Home, List, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from './ThemeToggle';
+import UserAuthMenu from './UserAuthMenu';
 
 const navItems = [
     { name: 'Início', href: '/', icon: Home },
@@ -52,7 +53,10 @@ const Header: React.FC = () => {
                     </ul>
                 </nav>
 
-                <ThemeToggle />
+                <div className="flex items-center space-x-1">
+                    <UserAuthMenu />
+                    <ThemeToggle />
+                </div>
             </div>
         </header>
     );

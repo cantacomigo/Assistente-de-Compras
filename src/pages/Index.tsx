@@ -1,7 +1,6 @@
 import React, { SetStateAction, Dispatch } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
-import LoginOpcional from '@/components/LoginOpcional';
 import ListasSalvas from '@/components/ListasSalvas';
 import ComparacoesSalvas from '@/components/ComparacoesSalvas';
 import HeroSection from '@/components/HeroSection';
@@ -52,14 +51,13 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
                     <div className="text-center mb-10">
                         <h2 className="text-3xl font-bold tracking-tight">Seu Painel Pessoal</h2>
                         <p className="mt-2 text-lg text-muted-foreground">
-                            {user ? "Acesse suas listas e comparações salvas." : "Faça login para salvar seu progresso e acessar suas listas de qualquer lugar."}
+                            {user ? "Acesse suas listas e comparações salvas." : "Faça login no menu superior para salvar seu progresso e acessar suas listas de qualquer lugar."}
                         </p>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                        {/* Coluna 1: Login e Boas-vindas */}
+                        {/* Coluna 1: Boas-vindas */}
                         <div className="lg:col-span-1 space-y-6">
                             <WelcomeMessage />
-                            <LoginOpcional />
                         </div>
 
                         {/* Coluna 2 & 3: Listas e Comparações Salvas */}
@@ -70,7 +68,7 @@ const Index: React.FC<InicioProps> = ({ setNumPessoas, setList, setComparisonRes
                                         setNumPessoas={setNumPessoas} 
                                         setList={setList}
                                         setCurrentListId={setCurrentListId}
-                                        setListName={setListName} // Novo
+                                        setListName={setListName}
                                     />
                                     <ComparacoesSalvas 
                                         setList={setList}
