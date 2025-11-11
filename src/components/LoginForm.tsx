@@ -12,7 +12,9 @@ import { showSuccess, showError } from '@/utils/toast';
 // Esquema de validação base
 const formSchema = z.object({
     email: z.string().email({ message: "Email inválido." }),
-    password: z.string().optional(), // Mantemos opcional no esquema base, mas forçamos validação condicionalmente
+    // A senha é opcional no esquema base para permitir o Magic Link,
+    // mas será validada condicionalmente no onSubmit.
+    password: z.string().optional(), 
 });
 
 type LoginFormValues = z.infer<typeof formSchema>;
@@ -43,13 +45,15 @@ const LoginForm: React.FC = () => {
     });
 
     const onSubmit = async (values: LoginFormValues) => {
-        // Validação condicional da senha
-        if (!useMagicLink && (!values.password || values.password.length < 6)) {
-            form.setError('password', {
-                type: 'manual',
-                message: 'A senha deve ter pelo menos 6 caracteres.',
-            });
-            return;
+        // Validação condicional da senha para Login/Cadastro
+        if (!useMagicLink) {
+            if (!values.password || values.password.length < 6) {
+                form.setError('password', {
+                    type: 'manual',
+                    message: 'A senha é obrigatória e deve ter pelo menos 6 caracteres.',
+                });
+                return;
+            }
         }
 
         setIsLoading(true);
@@ -91,10 +95,13 @@ const LoginForm: React.FC = () => {
         setIsLoading(false);
 
         if (error) {
+            // Tratamento de erros específicos do Supabase
             if (error.message.includes('Invalid login credentials')) {
                 showError("Credenciais inválidas. Verifique seu email e senha.");
             } else if (error.message.includes('Signups not allowed')) {
                 showError("O cadastro está desativado. Por favor, use uma conta existente ou peça ao administrador para habilitar o cadastro.");
+            } else if (error.message.includes('Email rate limit exceeded')) {
+                showError("Limite de envio de email excedido. Tente novamente mais tarde.");
             } else {
                 showError(`Erro de autenticação: ${error.message}`);
             }
@@ -152,10 +159,12 @@ const LoginForm: React.FC = () => {
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                         <Input 
-                                            placeholder="Senha" 
+                                            placeholder="Senha (mínimo 6 caracteres)" 
                                             {...field} 
                                             className="pl-10 h-10"
                                             type="password"
+                                            // Garante que o campo seja controlado, mesmo que o valor inicial seja undefined
+                                            value={field.value || ''} 
                                         />
                                     </div>
                                 </FormControl>
